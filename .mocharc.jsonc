@@ -1,0 +1,13 @@
+{
+	"require": "@babel/register",
+	"recursive": true,
+	"spec": [
+		"./packages/**/src/**/*.test.js"
+	],
+	"watch-files": [
+		"./packages/**/src/**/*.js"
+	],
+	"ignore": [
+		"./**/node_modules"
+	]
+}
