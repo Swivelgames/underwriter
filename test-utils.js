@@ -1,5 +1,4 @@
 /* eslint-disable import/prefer-default-export */
-import sinon from "sinon";
 import crypto from "crypto";
 
 const oldWeakMap = global.WeakMap;
@@ -39,22 +38,7 @@ Object.defineProperty(global, "WeakMap", { value: WeakMapSpy, configurable: fals
 
 const randomString = (len = 20) => crypto.randomBytes(len).toString("hex");
 
-const sinonImport = (ret) => {
-	let fake;
-	if (ret === void 0) {
-		fake = sinon.fake.returns(ret);
-	} else {
-		fake = sinon.fake();
-	}
-
-	const oldImport = global.import;
-	Object.defineProperty(global, "import", { value: fake });
-
-	return fake;
-};
-
 export {
 	WeakMapSpy,
 	randomString,
-	sinonImport
 };

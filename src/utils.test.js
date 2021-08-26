@@ -1,6 +1,6 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable no-unused-vars * /
 import assert from "assert";
-/* eslint-enable no-unused-vars */
+/* eslint-enable no-unused-vars * /
 import { ERRORS } from "./copy.js";
 import {
 	isClass,
@@ -248,3 +248,4 @@ describe("@exorsa/core::utils", () => {
 		});
 	});
 });
+/ **/

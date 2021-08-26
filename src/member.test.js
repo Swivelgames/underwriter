@@ -1,4 +1,4 @@
-/* eslint-disable import/first, no-unused-vars */
+/* eslint-disable import/first, no-unused-vars * /
 
 import assert from "assert";
 import sinon from "sinon";
@@ -7,7 +7,6 @@ import { ERRORS } from "../copy.js";
 import { WeakMapSpy, randomString } from "../../../../test-utils.js";
 
 import MemberRegistry from "./member.js";
-/* eslint-enable no-unused-vars */
 
 let spyWeakMap;
 let fakeMember;
@@ -327,3 +326,5 @@ describe("@exorsa/core::MemberRegistry", () => {
 		});
 	});
 });
+
+/ **/
