@@ -22,7 +22,7 @@ const ERRORS = {
 			requiredIdentifier: (identifier, qualifier, meta) => (
 				`Guarantor[${qualifier}].get( identifier ): Missing required parameter: identifier. ${ERROR_NOT_MY_FAULT}`
 			),
-			retrieveError: (identifier, qualifier, meta) => (
+			retrieverError: (identifier, qualifier, meta) => (
 				`Guarantor[${qualifier}].retriever( identifier: "${identifier}" ): An error occurred when trying to retrieve the referenced identifier. ${ERROR_NOT_MY_FAULT}`
 			),
 		},
@@ -31,7 +31,7 @@ const ERRORS = {
 				`Guarantor[${qualifier}].fulfill( identifier, guarantee, dependencies ): Missing required parameter: identifier. ${ERROR_NOT_MY_FAULT}`
 			),
 			guaranteeAlreadyRegistered: (identifier, qualifier) => (
-				`Guarantor[${qualifier}].register( identifier: "${identifier}", guarantee: ${typeof guarantee}, dependencies: ${typeof dependencies} ): This guarantee has already been fulfilled. Guarantees should only be fulfilled once. ${ERROR_NOT_MY_FAULT}`
+				`Guarantor[${qualifier}].fulfill( identifier: "${identifier}", guarantee: ${typeof guarantee}, dependencies: ${typeof dependencies} ): This guarantee has already been fulfilled. Guarantees should only be fulfilled once. ${ERROR_NOT_MY_FAULT}`
 			)
 		},
 	},

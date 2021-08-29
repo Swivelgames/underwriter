@@ -26,6 +26,7 @@ export const PublicRegistry = new Map();
  */
 export const DEFAULT_GUARANTOR = "$default";
 
+/* c8 ignore start */
 export const defaultInitializer = ({
 	guarantee,
 	dependencies,
@@ -33,6 +34,7 @@ export const defaultInitializer = ({
 	guarantee,
 	dependencies,
 });
+/* c8 ignore stop */
 
 /**
  * Guarantor
@@ -154,12 +156,15 @@ export default class Guarantor {
 	 * @return {!Promise} Promise, fulfilled when the Guarantee is fulfilled
 	 */
 	get(identifier) {
+		const [, lazy = false] = Array.from(arguments);
+
 		// Grab all our private instance properties
 		const {
 			meta,
 			qualifier,
 			resolvers,
 			promises,
+			retriever,
 			parent
 		} = Private.get(this);
 
@@ -186,6 +191,8 @@ export default class Guarantor {
 				// so that we can invoke them later
 				resolvers.set(fmtdId, { resolve, reject });
 
+				if (lazy === true) return;
+
 				// Retrieve the subject of the guarantee
 				Promise.resolve(
 					retriever(identifier, qualifier, meta)
@@ -196,6 +203,7 @@ export default class Guarantor {
 			console.error(
 				ERRORS.Guarantor.get.retrieverError(identifier, qualifier, meta)
 			);
+			console.error(error);
 			throw error;
 		}));
 	}
@@ -214,7 +222,8 @@ export default class Guarantor {
 			qualifier,
 			parent,
 			registry,
-			resolvers
+			resolvers,
+			initializer
 		} = Private.get(this);
 
 		// Make sure our identifier is a valid string
@@ -235,7 +244,7 @@ export default class Guarantor {
 		if (registry.has(fmtdId)) {
 			return Promise.reject(
 				new RangeError(
-					ERRORS.Guarantor.register.guaranteeAlreadyRegistered(
+					ERRORS.Guarantor.fulfill.guaranteeAlreadyRegistered(
 						identifier, qualifier, meta
 					)
 				)
@@ -245,13 +254,13 @@ export default class Guarantor {
 		registry.add(fmtdId);
 
 		// Grab the promise for this Guarantee
-		const promise = this.get(identifier);
+		const promise = this.get(identifier, true);
 
 		// Wait until the parent fulfilled and all of our dependencies are done
 		// being fulfilled themselves before proceeding
 		parent.then(
 			dependencies.length ? (
-				Guarantor.getAll(dependencies)
+				this.constructor.getAll(dependencies)
 			) : (
 				Promise.resolve()
 			)

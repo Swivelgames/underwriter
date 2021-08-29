@@ -24,7 +24,7 @@ let instanceQual;
 
 let mockGuarantee = randomString();
 let mockRetriever = sinon.fake.returns(
-	Promise.resolve(mockGuarantee)
+	() => mockGuarantee
 );
 
 Guarantor.getAll = sinon.fake.returns(
@@ -40,24 +40,17 @@ describe("berth::Guarantor", () => {
 		spyWeakMap = new WeakMapSpy();
 	});
 
-	// beforeEach(() => {
-	// 	Instance = new MemberRegistry({
-	// 		type: fakeTypeName,
-	// 		promise: Promise.resolve(mockParent)
-	// 	}, mockAgent);
-	// });
-
 	afterEach(() => {
 		spyWeakMap.delete(Instance);
 		sinon.reset();
 	});
 
-	describe("constructor()", () => {
+	describe("new Guarantor( options, meta )", () => {
 		beforeEach(() => {
 			instanceQual = randomString();
 		});
 
-		describe(".retriever", () => {
+		describe("options.retriever", () => {
 			it("throw: if retriever is not passed", () => {
 				const expected = (
 					ERRORS.Guarantor.constructor.invalidRetriever(
@@ -97,7 +90,7 @@ describe("berth::Guarantor", () => {
 			});
 		});
 
-		describe(".addressable", () => {
+		describe("options.addressable", () => {
 			it("should assign self to public registry if addressable option is true", () => {
 				Instance = new Guarantor({
 					qualifier: instanceQual,
@@ -131,12 +124,25 @@ describe("berth::Guarantor", () => {
 
 				assert.ok(
 					PublicRegistry.has(instanceQual),
-					"should set qualifier as key of PublicRegistry map"
+					"should add qualifier as key to the PublicRegistry map"
 				);
 
 				assert.ok(
 					PublicRegistry.get(instanceQual) === Instance,
 					"should store Instance in PublicRegistry map"
+				);
+			});
+
+			it("should NOT assign self to public registry if addressable option is true", () => {
+				Instance = new Guarantor({
+					qualifier: instanceQual,
+					retriever: mockRetriever,
+					addressable: false,
+				});
+
+				assert.ok(
+					!PublicRegistry.has(instanceQual),
+					"should NOT add qualifier as key to the PublicRegistry map"
 				);
 			});
 
@@ -172,13 +178,13 @@ describe("berth::Guarantor", () => {
 		});
 	});
 
-	describe("fulfill( identifier, guarantee, dependencies = [] )", () => {
+	describe(".fulfill( identifier, guarantee, dependencies = [] )", () => {
 		beforeEach(() => {
 			instanceQual = randomString();
 			Instance = new Guarantor({
 				qualifier: instanceQual,
 				retriever: mockRetriever,
-				addressable: true,
+				addressable: false,
 			});
 		});
 
@@ -233,6 +239,179 @@ describe("berth::Guarantor", () => {
 					return true;
 				},
 				"expecting ERRORS.Guarantor.fulfill.requiredIdentifier"
+			);
+		});
+
+		it("rejects: if identifier has already been fulfilled", () => {
+			const identifier = formatName(randomString());
+			const { registry } = spyWeakMap.get(Instance);
+			registry.add(identifier);
+
+			const expected = ERRORS.Guarantor.fulfill.guaranteeAlreadyRegistered(
+				identifier, instanceQual
+			);
+
+			assert.rejects(
+				Instance.fulfill(identifier, mockGuarantee, []),
+				(err) => {
+					assert.equal(err.message, expected)
+					return true;
+				},
+				"expecting ERRORS.Guarantor.fulfill.guaranteeAlreadyRegistered"
+			);
+		});
+
+		it("should fulfill its promise after initializer is called", () => {
+			const mockIdentifier = formatName(randomString());
+			const fakeInitializer = sinon.fake.returns(mockGuarantee);
+
+			instanceQual = randomString();
+			Instance = new Guarantor({
+				qualifier: instanceQual,
+				retriever: mockRetriever,
+				addressable: false,
+				initializer: fakeInitializer
+			});
+
+			return Instance.fulfill(
+				mockIdentifier, mockGuarantee
+			).then((actual) => {
+				assert.equal(actual, mockGuarantee);
+			});
+		});
+
+		it("should call initializer with identifier, qualifier, guarantee, and dependencies", () => {
+			const mockIdentifier = formatName(randomString());
+			const fakeInitializer = sinon.fake.returns(mockGuarantee);
+
+			instanceQual = randomString();
+			Instance = new Guarantor({
+				qualifier: instanceQual,
+				retriever: mockRetriever,
+				addressable: false,
+				initializer: fakeInitializer
+			});
+
+			return Instance.fulfill(
+				mockIdentifier, mockGuarantee
+			).then((actual) => {
+				assert.ok(
+					fakeInitializer.lastCall.calledWith(
+						sinon.match({
+							identifier: mockIdentifier,
+							qualifier: instanceQual,
+							guarantee: mockGuarantee,
+							dependencies: void 0,
+						})
+					)
+				);
+			});
+		});
+
+		it("throws: if initializer throws an error", () => {
+			const expected = randomString();
+			const mockIdentifier = formatName(randomString());
+			const fakeInitializer = sinon.fake.returns(
+				Promise.reject(expected)
+			);
+
+			instanceQual = randomString();
+			Instance = new Guarantor({
+				qualifier: instanceQual,
+				retriever: mockRetriever,
+				addressable: false,
+				initializer: fakeInitializer
+			});
+
+			assert.rejects(
+				() => Instance.fulfill(mockIdentifier, mockGuarantee), expected,
+				"should reject with error from initializer"
+			);
+		});
+
+		it("should retrieve all dependencies before resolving", () => {
+			const mockIdentifier = formatName(randomString());
+			const fakeInitializer = sinon.fake.returns(mockGuarantee);
+
+			const originalGetAll = Guarantor.getAll;
+			const expectedDeps = [
+				[mockIdentifier, instanceQual]
+			];
+			Guarantor.getAll = sinon.fake.returns(expectedDeps);
+
+			instanceQual = randomString();
+			Instance = new Guarantor({
+				qualifier: instanceQual,
+				retriever: mockRetriever,
+				addressable: false,
+				initializer: fakeInitializer
+			});
+
+			return Instance.fulfill(
+				mockIdentifier,
+				mockGuarantee,
+				expectedDeps,
+			).then(() => {
+				const { lastCall } = Guarantor.getAll;
+				Guarantor.getAll = originalGetAll;
+
+				assert.ok(
+					lastCall.calledWith(expectedDeps),
+					"should be called with dependencies"
+				);
+			});
+		});
+	});
+
+	describe(".get( identifier )", () => {
+		beforeEach(() => {
+			instanceQual = randomString();
+			Instance = new Guarantor({
+				qualifier: instanceQual,
+				retriever: mockRetriever,
+				addressable: false,
+			});
+		});
+
+		it("rejects: if identifier is not a string", () => {
+			const invalidId = [];
+			const expected = ERRORS.Guarantor.get.requiredIdentifier(
+				invalidId, instanceQual
+			);
+
+			assert.rejects(
+				Instance.get(invalidId), expected,
+				"expecting ERRORS.Guarantor.get.requiredIdentifier"
+			);
+		});
+
+		it("rejects: if identifier is an empty string", () => {
+			const invalidId = "";
+			const expected = ERRORS.Guarantor.get.requiredIdentifier(
+				invalidId, instanceQual
+			);
+
+			assert.rejects(
+				Instance.get(invalidId), expected,
+				"expecting ERRORS.Guarantor.get.requiredIdentifier"
+			);
+		});
+
+		it("should call retriever only on first call", () => {
+			const mockIdentifier = randomString();
+
+			const _ = Instance.get(mockIdentifier);
+
+			assert.ok(
+				!!mockRetriever.lastCall,
+				"retriever() must be called"
+			);
+
+			assert.ok(
+				mockRetriever.lastCall.calledWith(
+					mockIdentifier, instanceQual, void 0
+				),
+				"retriever() must be called with typeName and memberName requested"
 			);
 		});
 	});
@@ -359,7 +538,7 @@ describe("berth::Guarantor", () => {
 			const actual = Instance.get(fakeMemberName);
 			const expected = Private.promises.get(fakeMemberName);
 
-			// Registry signifies when a member has been registered
+			// Registry signifies when a member has been fulfilled
 			assert.ok(
 				!Private.registry.has(fakeMemberName),
 				"type still shouldn't be in the registry"
@@ -414,57 +593,57 @@ describe("berth::Guarantor", () => {
 		});
 	});
 
-	describe("register()", () => {
+	describe("fulfill()", () => {
 		it("should reject if no member descriptor is passed", () => {
 			const expected = (
-				ERRORS.MemberRegistry.register.requiredMemberDesc()
+				ERRORS.MemberRegistry.fulfill.requiredMemberDesc()
 			);
 			assert.rejects(
-				Instance.register.bind(Instance), expected,
-				"should throw ERRORS.MemberRegistry.register.requiredMemberDesc"
+				Instance.fulfill.bind(Instance), expected,
+				"should throw ERRORS.MemberRegistry.fulfill.requiredMemberDesc"
 			);
 		});
 
 		it("should reject if an invalid member descriptor is passed", () => {
 			const invalidMemDesc = {};
-			const expected = ERRORS.MemberRegistry.register.requiredMemberDesc(
+			const expected = ERRORS.MemberRegistry.fulfill.requiredMemberDesc(
 				invalidMemDesc
 			);
 			assert.rejects(
-				() => Instance.register(invalidMemDesc), expected,
-				"should throw ERRORS.MemberRegistry.register.requiredMemberDesc"
+				() => Instance.fulfill(invalidMemDesc), expected,
+				"should throw ERRORS.MemberRegistry.fulfill.requiredMemberDesc"
 			);
 		});
 
-		it("should reject if the member has already been registered", () => {
+		it("should reject if the member has already been fulfilled", () => {
 			const fakeMemberName = randomString();
 			const { registry } = spyWeakMap.get(Instance);
 
 			registry.add(fakeMemberName);
 
 			const expected = (
-				ERRORS.MemberRegistry.register.memberAlreadyDefined(
+				ERRORS.MemberRegistry.fulfill.memberAlreadyDefined(
 					fakeMemberName
 				)
 			);
 
 			assert.rejects(
 				() => (
-					Instance.register({
+					Instance.fulfill({
 						name: fakeMemberName,
 						member: () => {}
 					})
 				),
 				expected,
-				"should throw ERRORS.MemberRegistry.register.memberAlreadyDefined"
+				"should throw ERRORS.MemberRegistry.fulfill.memberAlreadyDefined"
 			);
 		});
 
-		it("should register and initialize a valid member", () => {
+		it("should fulfill and initialize a valid member", () => {
 			const Private = spyWeakMap.get(Instance);
 			const mock = mockMemberDescriptor;
 
-			// Make sure the member hasn't been registered yet
+			// Make sure the member hasn't been fulfilled yet
 			assert.ok(
 				!Private.registry.has(mock.name),
 				"type should not exist in registry yet"
@@ -480,7 +659,7 @@ describe("berth::Guarantor", () => {
 				"type should not have a promise yet"
 			);
 
-			const promiseActual = Instance.register(mock);
+			const promiseActual = Instance.fulfill(mock);
 
 			return promiseActual.then((member) => {
 				const promiseExpected = Private.promises.get(mock.name);
