@@ -21,4 +21,3 @@ export const initializeIfNeeded = (map, name, value = () => new Map()) => {
 	if (!map.has(name)) map.set(name, value());
 	return map.get(name);
 };
-

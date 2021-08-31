@@ -1,333 +1,193 @@
 /* eslint-disable import/first, no-unused-vars */
-
 import assert from "assert";
 import sinon from "sinon";
 import crypto from "crypto";
-import { ERRORS } from "./copy.js";
-import { WeakMapSpy, randomString } from "../test-utils.js";
-// import { formatName } from "./utils.js";
 
-import Guarantor, {
-	PublicRegistry,
-	DEFAULT_GUARANTOR,
-	defaultInitializer
-} from "./guarantor.js";
+import { ERRORS } from "./copy.js";
+import { randomString } from "../test-utils.js";
+import { formatName } from "./utils.js";
+
+import Guarantor from "./guarantor.js";
+import fulfill, { defaultInitializer } from "./fulfill.js";
 /* eslint-enable no-unused-vars */
 
-let spyWeakMap;
+let instance;// = new Guarantor();
+let mockRetriever = sinon.fake();
 
-let fakeGuarantee;
-
-let mockInitializer;
-let mockRetriever;
-let mockIdentifier;
-let mockQualifier;
-
-let Instance;
-
-describe("@exorsa/core::Guarantor", () => {
-	before(() => {
-		spyWeakMap = new WeakMapSpy();
-		fakeGuarantee = sinon.fake();
-		mockRetriever = sinon.fake.returns(
-			Promise.resolve()
-		);
-
-		mockMemberDescriptor = {
-			name: "membername",
-			member: fakeGuarantee
-		};
-
-		mockInitializer = sinon.fake.returns(fakeGuarantee);
-	});
-
+describe("berth::Guarantor", () => {
 	beforeEach(() => {
-		mockQualifier = randomString();
-		mockIdentifier = randomString();
-
-		Instance = new Guarantor({
-			qualifier: mockQualifier,
-			promise: Promise.resolve(),
-			initializer: mockInitializer,
-		}, mockAgent);
 	});
 
 	afterEach(() => {
-		spyWeakMap.delete(Instance);
 		sinon.reset();
 	});
 
-	describe("constructor()", () => {
-		it("should store arguments in a private weakmap", () => {
-			const Private = spyWeakMap.get(Instance);
+	describe("berth::constructor()", () => {
+		it("should throw if no retriever is passed", () => {
+			const expected = ERRORS.Guarantor.constructor.invalidRetriever();
 
-			assert.strictEqual(Private.agent, mockAgent);
-			assert.strictEqual(Private.qualifier, mockQualifier);
-			assert.ok(
-				Private.parent instanceof Promise,
-				"parent should be a promise"
+			assert.throws(
+				() => new Guarantor({}),
+				({ message }) => message === expected
 			);
-			assert.ok(
-				Private.registry instanceof Set,
-				"registry should be a Set"
+		});
+
+		it("should throw if an invalid retriever is passed", () => {
+			const invalidRetriever = [];
+			const expected = ERRORS.Guarantor.constructor.invalidRetriever(
+				invalidRetriever
 			);
-			assert.ok(
-				Private.resolvers instanceof Map,
-				"resolvers should be a Map"
+
+			assert.throws(
+				() => new Guarantor({ retriever: invalidRetriever }),
+				({ message }) => message === expected
 			);
-			assert.ok(
-				Private.promises instanceof Map,
-				"promises should be a Map"
+		});
+
+		it("should NOT throw if no initializer is passed", () => new Guarantor({ retriever: mockRetriever }));
+
+		it("should throw if an invalid initializer is passed", () => {
+			const invalidInitializer = [];
+			const expected = ERRORS.Guarantor.constructor.invalidInitializer(
+				invalidInitializer
+			);
+
+			assert.throws(
+				() => new Guarantor({
+					retriever: mockRetriever,
+					initializer: invalidInitializer,
+				}),
+				({ message }) => message === expected
 			);
 		});
 	});
 
-	describe("get()", () => {
-		it("should reject if no member name is passed", () => {
-			const expected = (
-				ERRORS.Guarantor.get.requiredMember(mockQualifier)
-			);
-			assert.rejects(
-				Instance.get.bind(Instance), expected,
-				"should throw ERRORS.Guarantor.get.requiredMember"
-			);
-		});
-
-		it("should reject if an invalid member name is passed", () => {
-			const localFakeMember = {};
-			const expected = ERRORS.Guarantor.get.requiredMember(
-				mockQualifier, localFakeMember
-			);
-			assert.rejects(
-				() => Instance.get(localFakeMember), expected,
-				"should throw ERRORS.Guarantor.get.requiredMember"
-			);
-		});
-
-		describe("agent.retrieve()", () => {
-			it("should request qualifier from exorsa if the qualifier does not yet exist", () => {
-				const fakeGuaranteeName = randomString();
-				Instance.get(fakeGuaranteeName);
-
-				assert.ok(
-					!!mockRetriever.lastCall,
-					"retrieve() must be called"
-				);
-				assert.ok(
-					mockRetriever.lastCall.calledWith(
-						mockQualifier, fakeGuaranteeName
-					),
-					"retrieve() must be called with qualifierName and memberName requested"
-				);
-			});
-
-			it("should reject qualifier if exorsa agent.retrieve() is rejected", () => {
-				const expectedError = randomString();
-				const mockLocalAgent = {
-					...mockAgent,
-					retrieve: sinon.fake.returns(
-						() => Promise.reject(expectedError)
-					),
-				};
-
-				const localFakeTypeName = randomString();
-
-				const localInstance = new Guarantor({
-					qualifier: localFakeTypeName,
-					promise: Promise.resolve(),
-					initializer: mockInitializer,
-				}, mockLocalAgent);
-				const Private = spyWeakMap.get(localInstance);
-
-				const fakeGuaranteeName = randomString();
-				localInstance.get(fakeGuaranteeName);
-
-				assert.ok(
-					!!mockLocalAgent.retrieve.lastCall,
-					"retrieve() must be called"
-				);
-				assert.ok(
-					mockLocalAgent.retrieve.lastCall.calledWith(
-						localFakeTypeName, fakeGuaranteeName
-					),
-					"retrieve() must be called with qualifierName and memberName requested"
-				);
-				assert.rejects(
-					Private.promises.get(fakeGuaranteeName), expectedError
-				);
+	describe("berth:get( identifier )", () => {
+		before(() => {
+			instance = new Guarantor({
+				retriever: mockRetriever,
 			});
 		});
 
-		it("should return a new promise if the member does not yet exist", () => {
-			const Private = spyWeakMap.get(Instance);
+		it("should reject if no identifier is passed", async () => {
+			const expected = ERRORS.Guarantor.get.requiredIdentifier();
 
-			const fakeGuaranteeName = randomString();
-
-			assert.ok(
-				!Private.registry.has(fakeGuaranteeName),
-				"qualifier should not exist in registry yet"
-			);
-			assert.ok(
-				!Private.resolvers.has(fakeGuaranteeName),
-				"qualifier should not have a resolver yet"
-			);
-			assert.ok(
-				!Private.promises.has(fakeGuaranteeName),
-				"qualifier should not have a promise yet"
-			);
-
-			const actual = Instance.get(fakeGuaranteeName);
-			const expected = Private.promises.get(fakeGuaranteeName);
-
-			// Registry signifies when a member has been registered
-			assert.ok(
-				!Private.registry.has(fakeGuaranteeName),
-				"qualifier still shouldn't be in the registry"
-			);
-
-			// Resolvers and promises should be populated regardless
-			assert.ok(
-				Private.resolvers.has(fakeGuaranteeName),
-				"qualifier should now have a resolver"
-			);
-			assert.ok(
-				Private.promises.has(fakeGuaranteeName),
-				"qualifier should now have a promise"
-			);
-			assert.strictEqual(actual, expected);
-		});
-
-		it("should invoke exorsa.retrieve if the member does not yet exist", () => {
-			const Private = spyWeakMap.get(Instance);
-
-			const fakeGuaranteeName = randomString();
-
-			assert.ok(
-				!Private.registry.has(fakeGuaranteeName),
-				"qualifier should not exist in registry"
-			);
-			assert.ok(
-				!Private.resolvers.has(fakeGuaranteeName),
-				"qualifier should not have a resolver"
-			);
-			assert.ok(
-				!Private.promises.has(fakeGuaranteeName),
-				"qualifier should not have a promise"
-			);
-
-			Instance.get(fakeGuaranteeName);
-
-			assert.strictEqual(mockRetriever.callCount, 1);
-		});
-
-		it("should return the same promise for every request to ther same member", () => {
-			const Private = spyWeakMap.get(Instance);
-
-			const fakeGuaranteeName = randomString();
-
-			const actual1 = Instance.get(fakeGuaranteeName);
-			const actual2 = Instance.get(fakeGuaranteeName);
-			const expected = Private.promises.get(fakeGuaranteeName);
-
-			assert.strictEqual(actual1, expected);
-			assert.strictEqual(actual2, expected);
-		});
-	});
-
-	describe("register()", () => {
-		it("should reject if no member descriptor is passed", () => {
-			const expected = (
-				ERRORS.Guarantor.register.requiredMemberDesc()
-			);
-			assert.rejects(
-				Instance.register.bind(Instance), expected,
-				"should throw ERRORS.Guarantor.register.requiredMemberDesc"
+			await assert.rejects(
+				() => instance.get(),
+				({ message }) => message === expected
 			);
 		});
 
-		it("should reject if an invalid member descriptor is passed", () => {
-			const invalidMemDesc = {};
-			const expected = ERRORS.Guarantor.register.requiredMemberDesc(
-				invalidMemDesc
-			);
-			assert.rejects(
-				() => Instance.register(invalidMemDesc), expected,
-				"should throw ERRORS.Guarantor.register.requiredMemberDesc"
-			);
-		});
-
-		it("should reject if the member has already been registered", () => {
-			const fakeGuaranteeName = randomString();
-			const { registry } = spyWeakMap.get(Instance);
-
-			registry.add(fakeGuaranteeName);
-
-			const expected = (
-				ERRORS.Guarantor.register.memberAlreadyDefined(
-					fakeGuaranteeName
-				)
+		it("should reject if an invalid identifier is passed", async () => {
+			const invalidId = "";
+			const expected = ERRORS.Guarantor.get.requiredIdentifier(
+				invalidId
 			);
 
-			assert.rejects(
-				() => (
-					Instance.register({
-						name: fakeGuaranteeName,
-						member: () => {}
-					})
-				),
-				expected,
-				"should throw ERRORS.Guarantor.register.memberAlreadyDefined"
+			await assert.rejects(
+				() => instance.get(invalidId),
+				({ message }) => message === expected
 			);
 		});
 
-		it("should register and initialize a valid member", () => {
-			const Private = spyWeakMap.get(Instance);
+		it("should reject if the retriever fails", async () => {
+			const mockIdentifier = randomString();
 
-			// Make sure the member hasn't been registered yet
-			assert.ok(
-				!Private.registry.has(mockIdentifier),
-				"qualifier should not exist in registry yet"
+			const expected = randomString();
+			const mockRetrieverFail = sinon.fake.returns(
+				Promise.reject(expected)
 			);
 
-			// We also want to make sure the promises and resolvers are being created
-			assert.ok(
-				!Private.resolvers.has(mockIdentifier),
-				"qualifier should not have a resolver yet"
-			);
-			assert.ok(
-				!Private.promises.has(mockIdentifier),
-				"qualifier should not have a promise yet"
-			);
-
-			const promiseActual = Instance.fulfill(
-				mockIdentifier, mockGuarantee
-			);
-
-			return promiseActual.then((member) => {
-				const promiseExpected = Private.promises.get(mockIdentifier);
-				assert.strictEqual(promiseActual, promiseExpected);
-
-				assert.ok(
-					Private.registry.has(mockIdentifier),
-					"should add the member's name to the registry"
-				);
-
-				// ''
-				assert.strictEqual(
-					mockAgent.getAll.callCount, 1,
-					"should attempt to load all dependencies first"
-				);
-
-				assert.strictEqual(
-					mockInitializer.callCount, 1,
-					"should initialize the member using its parent"
-				);
-
-				assert.strictEqual(
-					member, mockIdentifier,
-					"should resolve the stored promise"
-				);
+			instance = new Guarantor({
+				retriever: mockRetrieverFail,
 			});
+
+			await assert.rejects(
+				() => instance.get(mockIdentifier),
+				(err) => err === expected
+			);
+		});
+
+		it("should create a promise and call the retriever", async () => {
+			const mockIdentifier = randomString();
+			const stubGuarantee = randomString();
+
+			mockRetriever = sinon.fake((id, ful) => ful(stubGuarantee));
+
+			instance = new Guarantor({
+				retriever: mockRetriever,
+			});
+
+			const actualRet = instance.get(mockIdentifier);
+			// const resolvedResult = await actualRet;
+
+			assert.ok(
+				typeof actualRet.then === "function",
+				"should return a thenable"
+			);
+
+			assert.ok(
+				!!mockRetriever.lastCall,
+				"should call retriever()"
+			);
+
+			const { firstArg, lastArg } = mockRetriever.lastCall;
+
+			assert.ok(
+				firstArg === mockIdentifier,
+				"should pass identifier to retriever"
+			);
+
+			assert.ok(
+				typeof lastArg === "function",
+				"should pass a fulfill function to retriever"
+			);
+		});
+
+		it("should not produce new promises or call the retriever again on subsequent calls", async () => {
+			const mockIdentifier = randomString();
+			const stubGuarantee = randomString();
+
+			mockRetriever = sinon.fake.returns(
+				Promise.resolve(stubGuarantee)
+			);
+
+			instance = new Guarantor({
+				retriever: mockRetriever,
+			});
+
+			const expected = instance.get(mockIdentifier);
+			const actual = instance.get(mockIdentifier);
+
+			assert.strictEqual(
+				expected, actual,
+				"should always return the same promise"
+			);
+
+			assert.equal(
+				mockRetriever.callCount, 1,
+				"should only call retriever() once"
+			);
+		});
+
+		it("internal: should not call the retriever if lazy is true", () => {
+			const mockIdentifier = randomString();
+			const stubGuarantee = randomString();
+
+			mockRetriever = sinon.fake.returns(
+				Promise.resolve(stubGuarantee)
+			);
+
+			instance = new Guarantor({
+				retriever: mockRetriever,
+			});
+
+			instance.get(mockIdentifier, true);
+
+			assert.equal(
+				mockRetriever.callCount, 0,
+				"should not be called if lazy is true"
+			);
 		});
 	});
 });
