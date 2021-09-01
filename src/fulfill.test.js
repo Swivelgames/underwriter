@@ -47,7 +47,7 @@ const getMockPriv = () => ({
 	initializer: fakeInitializer,
 });
 
-describe("berth::fulfill", () => {
+describe("underwriter::fulfill", () => {
 	beforeEach(() => {
 		mockInstance = sinon.createStubInstance(Guarantor);
 		mockIdentifier = randomString();
@@ -110,7 +110,7 @@ describe("berth::fulfill", () => {
 		);
 	});
 
-	describe("berth::defaultInitializer", () => {
+	describe("underwriter::defaultInitializer", () => {
 		it("should return an object containing the identifier and guarantee", () => {
 			const expected = {
 				identifier: mockIdentifier,

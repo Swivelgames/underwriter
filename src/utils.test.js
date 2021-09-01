@@ -7,7 +7,7 @@ import {
 	initializeIfNeeded,
 } from "./utils.js";
 
-describe("berth::utils", () => {
+describe("underwriter::utils", () => {
 	describe("formatName()", () => {
 		it("should return lowercased version of a string", () => {
 			assert.equal(formatName("FooBaR"), "foobar");

@@ -14,7 +14,7 @@ import fulfill, { defaultInitializer } from "./fulfill.js";
 let instance;// = new Guarantor();
 let mockRetriever = sinon.fake();
 
-describe("berth::Guarantor", () => {
+describe("underwriter::Guarantor", () => {
 	beforeEach(() => {
 	});
 
@@ -22,7 +22,7 @@ describe("berth::Guarantor", () => {
 		sinon.reset();
 	});
 
-	describe("berth::constructor()", () => {
+	describe("underwriter::constructor()", () => {
 		it("should throw if no retriever is passed", () => {
 			const expected = ERRORS.Guarantor.constructor.invalidRetriever();
 
@@ -62,7 +62,7 @@ describe("berth::Guarantor", () => {
 		});
 	});
 
-	describe("berth:get( identifier )", () => {
+	describe("underwriter:get( identifier )", () => {
 		before(() => {
 			instance = new Guarantor({
 				retriever: mockRetriever,

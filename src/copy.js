@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 
 /* /c8 ignore start */
-const ERROR_NOT_MY_FAULT = "This most likely isn't an issue with Berth, but with the library or framework you're using. Please submit an issue ticket to the owners of this package.";
+const ERROR_NOT_MY_FAULT = "This most likely isn't an issue with Underwriter, but with the library or framework you're using. Please submit an issue ticket to the owners of this package.";
 
 const ERRORS = {
 	Guarantor: {

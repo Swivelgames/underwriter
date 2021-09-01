@@ -1,6 +1,6 @@
 {
 	"type": "module",
-	"name": "berth",
+	"name": "underwriter",
 	"version": "0.0.1",
 	"description": "An automated Promise Registry",
 	"author": "Joseph Dalrymple <swivelgames@gmail.com>",
