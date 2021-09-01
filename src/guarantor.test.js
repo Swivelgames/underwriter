@@ -211,7 +211,7 @@ describe("underwriter::Guarantor", () => {
 			);
 		});
 
-		it("should wait to retrieve a guarantee until parent promise resolves if waitToRetrieve is true", async () => {
+		it("should wait to retrieve a guarantee until parent promise resolves if retrieveEarly is false", async () => {
 			const mockIdentifier = randomString();
 			const stubGuarantee = randomString();
 
@@ -227,29 +227,63 @@ describe("underwriter::Guarantor", () => {
 			instance = new Guarantor({
 				retriever: mockRetriever,
 				parent: mockParent,
-				waitToRetrieve: true,
+				retrieveEarly: false,
 			});
 
 			const expected = instance.get(mockIdentifier);
 
-			await Promise.resolve().then(async () => {
-				setTimeout(() => {
-					parentResolve();
-				}, 100);
-
-				setTimeout(() => {
-					assert.equal(
-						mockRetriever.callCount, 0,
-						"shouldn't call retriever yet"
-					);
-				}, 25);
-
-				await expected;
-
+			setTimeout(() => {
 				assert.equal(
-					mockRetriever.callCount, 1,
-					"should only call retriever() once"
+					mockRetriever.callCount, 0,
+					"shouldn't call retriever yet"
 				);
+			}, 5);
+
+			setTimeout(() => {
+				parentResolve();
+			}, 25);
+
+			await expected;
+
+			assert.equal(
+				mockRetriever.callCount, 1,
+				"should only call retriever() once"
+			);
+		});
+
+		it("should immediately retrieve a guarantee if retrieveEarly is true", () => {
+			const mockIdentifier = randomString();
+			const stubGuarantee = randomString();
+
+			let parentResolve;
+			const mockParent = new Promise((resolve) => {
+				parentResolve = resolve;
+			});
+
+			mockRetriever = sinon.fake.returns(
+				Promise.resolve(stubGuarantee)
+			);
+
+			instance = new Guarantor({
+				retriever: mockRetriever,
+				parent: mockParent,
+				retrieveEarly: true,
+			});
+
+			const expected = instance.get(mockIdentifier);
+
+			return new Promise((resolve, reject) => {
+				setTimeout(() => {
+					try {
+						assert.equal(
+							mockRetriever.callCount, 1,
+							"should have already called the retriever"
+						);
+					} catch (e) {
+						reject(e);
+					}
+					resolve();
+				}, 5);
 			});
 		});
 

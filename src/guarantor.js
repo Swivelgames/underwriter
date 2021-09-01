@@ -20,7 +20,7 @@ export default class Guarantor {
 		parent = Promise.resolve(),
 		retriever,
 		initializer,
-		waitToRetrieve = false,
+		retrieveEarly = false,
 		thenableApi = Promise,
 	}) {
 		// Make sure our retriever is a function
@@ -63,7 +63,7 @@ export default class Guarantor {
 		Private.set(this, {
 			parent,
 			retriever,
-			waitToRetrieve,
+			retrieveEarly,
 			thenableApi,
 			...(initializer ? ({ initializer }) : {}),
 			registry: new Set(),
@@ -92,7 +92,7 @@ export default class Guarantor {
 			resolvers,
 			promises,
 			retriever,
-			waitToRetrieve,
+			retrieveEarly,
 			thenableApi: ThenableApi
 		} = Private.get(this);
 
@@ -122,7 +122,7 @@ export default class Guarantor {
 				// If we're being lazy, don't call the retriever
 				if (lazy === true) return;
 
-				const principle = waitToRetrieve ? parent : Promise.resolve();
+				const principle = retrieveEarly ? Promise.resolve() : parent;
 
 				// Retrieve the subject of the guarantee
 				principle.then(
