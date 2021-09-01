@@ -44,6 +44,21 @@ describe("underwriter::Guarantor", () => {
 			);
 		});
 
+		it("should throw if an invalid parent is passed", () => {
+			const invalidParent = [];
+			const expected = ERRORS.Guarantor.constructor.invalidParent(
+				invalidParent
+			);
+
+			assert.throws(
+				() => new Guarantor({
+					retriever: mockRetriever,
+					parent: invalidParent,
+				}),
+				({ message }) => message === expected
+			);
+		});
+
 		it("should NOT throw if no initializer is passed", () => new Guarantor({ retriever: mockRetriever }));
 
 		it("should throw if an invalid initializer is passed", () => {
@@ -56,6 +71,34 @@ describe("underwriter::Guarantor", () => {
 				() => new Guarantor({
 					retriever: mockRetriever,
 					initializer: invalidInitializer,
+				}),
+				({ message }) => message === expected
+			);
+		});
+
+		it("should throw if an invalid Thenable API is passed", () => {
+			let invalidThenableApi = null;
+			let expected = ERRORS.Guarantor.constructor.invalidThenableApi(
+				invalidThenableApi
+			);
+
+			assert.throws(
+				() => new Guarantor({
+					retriever: mockRetriever,
+					thenableApi: invalidThenableApi,
+				}),
+				({ message }) => message === expected
+			);
+
+			invalidThenableApi = class{};
+			expected = ERRORS.Guarantor.constructor.invalidThenableApi(
+				invalidThenableApi
+			);
+
+			assert.throws(
+				() => new Guarantor({
+					retriever: mockRetriever,
+					thenableApi: invalidThenableApi,
 				}),
 				({ message }) => message === expected
 			);
@@ -112,19 +155,20 @@ describe("underwriter::Guarantor", () => {
 			const mockIdentifier = randomString();
 			const stubGuarantee = randomString();
 
-			mockRetriever = sinon.fake((id, ful) => ful(stubGuarantee));
+			mockRetriever = sinon.fake(() => stubGuarantee);
 
 			instance = new Guarantor({
 				retriever: mockRetriever,
 			});
 
 			const actualRet = instance.get(mockIdentifier);
-			// const resolvedResult = await actualRet;
 
 			assert.ok(
 				typeof actualRet.then === "function",
 				"should return a thenable"
 			);
+
+			await actualRet;
 
 			assert.ok(
 				!!mockRetriever.lastCall,
@@ -136,11 +180,6 @@ describe("underwriter::Guarantor", () => {
 			assert.ok(
 				firstArg === mockIdentifier,
 				"should pass identifier to retriever"
-			);
-
-			assert.ok(
-				typeof lastArg === "function",
-				"should pass a fulfill function to retriever"
 			);
 		});
 
@@ -159,6 +198,8 @@ describe("underwriter::Guarantor", () => {
 			const expected = instance.get(mockIdentifier);
 			const actual = instance.get(mockIdentifier);
 
+			await expected;
+
 			assert.strictEqual(
 				expected, actual,
 				"should always return the same promise"
@@ -168,6 +209,48 @@ describe("underwriter::Guarantor", () => {
 				mockRetriever.callCount, 1,
 				"should only call retriever() once"
 			);
+		});
+
+		it("should wait to retrieve a guarantee until parent promise resolves if waitToRetrieve is true", async () => {
+			const mockIdentifier = randomString();
+			const stubGuarantee = randomString();
+
+			let parentResolve;
+			const mockParent = new Promise((resolve) => {
+				parentResolve = resolve;
+			});
+
+			mockRetriever = sinon.fake.returns(
+				Promise.resolve(stubGuarantee)
+			);
+
+			instance = new Guarantor({
+				retriever: mockRetriever,
+				parent: mockParent,
+				waitToRetrieve: true,
+			});
+
+			const expected = instance.get(mockIdentifier);
+
+			await Promise.resolve().then(async () => {
+				setTimeout(() => {
+					parentResolve();
+				}, 100);
+
+				setTimeout(() => {
+					assert.equal(
+						mockRetriever.callCount, 0,
+						"shouldn't call retriever yet"
+					);
+				}, 25);
+
+				await expected;
+
+				assert.equal(
+					mockRetriever.callCount, 1,
+					"should only call retriever() once"
+				);
+			});
 		});
 
 		it("internal: should not call the retriever if lazy is true", () => {
