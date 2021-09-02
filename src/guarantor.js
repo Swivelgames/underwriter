@@ -17,7 +17,7 @@ const Private = new WeakMap();
  */
 export default class Guarantor {
 	constructor({
-		parent = Promise.resolve(),
+		defer = Promise.resolve(),
 		retriever,
 		initializer,
 		retrieveEarly = false,
@@ -32,11 +32,11 @@ export default class Guarantor {
 			);
 		}
 
-		// Make sure our parent is a thenable
-		if (parent && typeof parent.then !== "function") {
+		// Make sure our defer is a thenable
+		if (defer && typeof defer.then !== "function") {
 			throw new TypeError(
-				ERRORS.Guarantor.constructor.invalidParent(
-					parent
+				ERRORS.Guarantor.constructor.invalidDeferrer(
+					defer
 				)
 			);
 		}
@@ -61,7 +61,7 @@ export default class Guarantor {
 
 		/* c8 ignore start */
 		Private.set(this, {
-			parent,
+			defer,
 			retriever,
 			retrieveEarly,
 			thenableApi,
@@ -88,7 +88,7 @@ export default class Guarantor {
 
 		// Grab all our private instance properties
 		const {
-			parent,
+			defer,
 			resolvers,
 			promises,
 			retriever,
@@ -122,7 +122,7 @@ export default class Guarantor {
 				// If we're being lazy, don't call the retriever
 				if (lazy === true) return;
 
-				const principle = retrieveEarly ? Promise.resolve() : parent;
+				const principle = retrieveEarly ? Promise.resolve() : defer;
 
 				// Retrieve the subject of the guarantee
 				principle.then(

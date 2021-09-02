@@ -6,13 +6,7 @@ import { formatName } from "./utils.js";
  *
  * @type {Function}
  */
-export const defaultInitializer = (
-	identifier,
-	guarantee
-) => ({
-	identifier,
-	guarantee,
-});
+export const defaultInitializer = (_, guarantee) => guarantee;
 
 /**
  * Fulfill a Guarantee
@@ -29,7 +23,7 @@ const fulfill = (instance, priv, identifier, guarantee) => {
 
 	// Grab our private instance properties
 	const {
-		parent,
+		defer,
 		registry,
 		resolvers,
 		initializer = defaultInitializer,
@@ -52,8 +46,8 @@ const fulfill = (instance, priv, identifier, guarantee) => {
 	// Grab the promise for this Guarantee
 	const promise = instance.get(identifier, true);
 
-	// Wait until the parent is fulfilled before proceeding
-	parent.then(() => (
+	// Wait until the defer is fulfilled before proceeding
+	defer.then(() => (
 		// Pass the guarantee to our initialzer
 		initializer(identifier, guarantee)
 	)).then(

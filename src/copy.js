@@ -7,16 +7,16 @@ const ERRORS = {
 	Guarantor: {
 		constructor: {
 			invalidRetriever: (retriever) => (
-				`FATAL: new Guarantor( { retriever: ~${typeof retriever}, ... } ): Invalid retriever. A retriever must be a function that accepts a string ID and returns the requested resource. ${ERROR_NOT_MY_FAULT}`
+				`FATAL: new Guarantor( { retriever: ~${typeof retriever}, ... } ): Invalid retriever option. A retriever must be a function that accepts a string ID and returns the requested resource. ${ERROR_NOT_MY_FAULT}`
 			),
-			invalidParent: (parent) => (
-				`FATAL: new Guarantor( { parent: ~${typeof parent}, ... } ): Invalid parent. A parent must be any object with a .then() property. ${ERROR_NOT_MY_FAULT}`
+			invalidDeferrer: (defer) => (
+				`FATAL: new Guarantor( { defer: ~${typeof defer}, ... } ): Invalid defer option. A defer must be any object with a .then() property. ${ERROR_NOT_MY_FAULT}`
 			),
 			invalidInitializer: (initializer) => (
-				`FATAL: new Guarantor( { initializer: ~${typeof initializer}, ... } ): Invalid initializer. An initializer must be a function that accepts a string ID and its associated guarantee, and returns the final value of the guarantee. ${ERROR_NOT_MY_FAULT}`
+				`FATAL: new Guarantor( { initializer: ~${typeof initializer}, ... } ): Invalid initializer option. An initializer must be a function that accepts a string ID and its associated guarantee, and returns the final value of the guarantee. ${ERROR_NOT_MY_FAULT}`
 			),
 			invalidThenableApi: (thenableApi) => (
-				`FATAL: new Guarantor( { thenableApi: ~${typeof thenableApi}, ... } ): Invalid Thenable API. A Thenable API must be a prototype or class that provides its instances with a .then() method. This is a highly advanced and nuanced feature. Most of the time, you can leave this blank to use the built-in "Promise" class.`
+				`FATAL: new Guarantor( { thenableApi: ~${typeof thenableApi}, ... } ): Invalid Thenable API option. A Thenable API must be a prototype or class that provides its instances with a .then() method. This is a highly advanced and nuanced feature. Most of the time, you can leave this blank to use the built-in "Promise" class.`
 			),
 		},
 		get: {

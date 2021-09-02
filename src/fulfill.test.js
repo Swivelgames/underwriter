@@ -20,7 +20,7 @@ let mockGuarantee;// = randomString();
 let mockPromise;// = getMockPromise();
 let mockPriv;// = getMockPriv();
 
-const mockParent = Promise.resolve();
+const mockDeferrer = Promise.resolve();
 
 const getMockPromise = () => (
 	new Promise((resolve, reject) => {
@@ -41,7 +41,7 @@ const fakeInitializer = sinon.fake(
 );
 
 const getMockPriv = () => ({
-	parent: mockParent,
+	defer: mockDeferrer,
 	registry: fakeRegistry,
 	resolvers: fakeResolvers,
 	initializer: fakeInitializer,
@@ -111,18 +111,10 @@ describe("underwriter::fulfill", () => {
 	});
 
 	describe("underwriter::defaultInitializer", () => {
-		it("should return an object containing the identifier and guarantee", () => {
-			const expected = {
-				identifier: mockIdentifier,
-				guarantee: mockGuarantee,
-			};
-
+		it("should return the guarantee as-is", () => {
 			const actual = defaultInitializer(mockIdentifier, mockGuarantee);
 
-			assert.deepStrictEqual(
-				actual,
-				expected,
-			);
+			assert.strictEqual(actual, mockGuarantee);
 		});
 	});
 });

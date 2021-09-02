@@ -32,6 +32,8 @@ describe("underwriter::Guarantor", () => {
 			);
 		});
 
+		it("should NOT throw if optional properties are omitted from options", () => new Guarantor({ retriever: mockRetriever }));
+
 		it("should throw if an invalid retriever is passed", () => {
 			const invalidRetriever = [];
 			const expected = ERRORS.Guarantor.constructor.invalidRetriever(
@@ -44,22 +46,20 @@ describe("underwriter::Guarantor", () => {
 			);
 		});
 
-		it("should throw if an invalid parent is passed", () => {
-			const invalidParent = [];
-			const expected = ERRORS.Guarantor.constructor.invalidParent(
-				invalidParent
+		it("should throw if an invalid defer is passed", () => {
+			const invalidDeferrer = [];
+			const expected = ERRORS.Guarantor.constructor.invalidDeferrer(
+				invalidDeferrer
 			);
 
 			assert.throws(
 				() => new Guarantor({
 					retriever: mockRetriever,
-					parent: invalidParent,
+					defer: invalidDeferrer,
 				}),
 				({ message }) => message === expected
 			);
 		});
-
-		it("should NOT throw if no initializer is passed", () => new Guarantor({ retriever: mockRetriever }));
 
 		it("should throw if an invalid initializer is passed", () => {
 			const invalidInitializer = [];
@@ -90,7 +90,7 @@ describe("underwriter::Guarantor", () => {
 				({ message }) => message === expected
 			);
 
-			invalidThenableApi = class{};
+			invalidThenableApi = class {};
 			expected = ERRORS.Guarantor.constructor.invalidThenableApi(
 				invalidThenableApi
 			);
@@ -175,10 +175,8 @@ describe("underwriter::Guarantor", () => {
 				"should call retriever()"
 			);
 
-			const { firstArg, lastArg } = mockRetriever.lastCall;
-
 			assert.ok(
-				firstArg === mockIdentifier,
+				mockRetriever.lastCall.firstArg === mockIdentifier,
 				"should pass identifier to retriever"
 			);
 		});
@@ -211,13 +209,13 @@ describe("underwriter::Guarantor", () => {
 			);
 		});
 
-		it("should wait to retrieve a guarantee until parent promise resolves if retrieveEarly is false", async () => {
+		it("should wait to retrieve a guarantee until defer promise resolves if retrieveEarly is false", async () => {
 			const mockIdentifier = randomString();
 			const stubGuarantee = randomString();
 
-			let parentResolve;
-			const mockParent = new Promise((resolve) => {
-				parentResolve = resolve;
+			let deferResolve;
+			const mockDeferrer = new Promise((resolve) => {
+				deferResolve = resolve;
 			});
 
 			mockRetriever = sinon.fake.returns(
@@ -226,7 +224,7 @@ describe("underwriter::Guarantor", () => {
 
 			instance = new Guarantor({
 				retriever: mockRetriever,
-				parent: mockParent,
+				defer: mockDeferrer,
 				retrieveEarly: false,
 			});
 
@@ -240,7 +238,7 @@ describe("underwriter::Guarantor", () => {
 			}, 5);
 
 			setTimeout(() => {
-				parentResolve();
+				deferResolve();
 			}, 25);
 
 			await expected;
@@ -255,10 +253,7 @@ describe("underwriter::Guarantor", () => {
 			const mockIdentifier = randomString();
 			const stubGuarantee = randomString();
 
-			let parentResolve;
-			const mockParent = new Promise((resolve) => {
-				parentResolve = resolve;
-			});
+			const mockDeferrer = new Promise(() => {});
 
 			mockRetriever = sinon.fake.returns(
 				Promise.resolve(stubGuarantee)
@@ -266,11 +261,11 @@ describe("underwriter::Guarantor", () => {
 
 			instance = new Guarantor({
 				retriever: mockRetriever,
-				parent: mockParent,
+				defer: mockDeferrer,
 				retrieveEarly: true,
 			});
 
-			const expected = instance.get(mockIdentifier);
+			instance.get(mockIdentifier);
 
 			return new Promise((resolve, reject) => {
 				setTimeout(() => {
