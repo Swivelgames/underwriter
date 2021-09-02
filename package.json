@@ -4,8 +4,12 @@
 	"version": "0.0.1",
 	"description": "An automated Promise Registry",
 	"author": "Joseph Dalrymple <swivelgames@gmail.com>",
-	"license": "GNUv3",
 	"main": "lib/index.js",
+	"files": [
+		"lib/",
+		"README.md",
+		"LICENSE.md"
+	],
 	"scripts": {
 		"build": "npm run build:clean",
 		"build:clean": "npm run clean; npm run build:quick",
@@ -47,5 +51,14 @@
 		"reject",
 		"dependency",
 		"injection"
-	]
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@gitlab.com/swivel/underwriter.git"
+	},
+	"bugs": {
+		"url": "https://gitlab.com/swivel/underwriter/issues"
+	},
+	"homepage": "https://gitlab.com/swivel/underwriter#readme",
+	"license": "GNUv3"
 }
