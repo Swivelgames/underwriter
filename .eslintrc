@@ -1,0 +1,29 @@
+{
+	"env": {
+		"shared-node-browser": true,
+		"es2020": true,
+		"browser": true,
+		"node": true,
+		"mocha": true
+	},
+	"extends": "airbnb",
+	"parser": "babel-eslint",
+	"rules": {
+		"indent": [2, "tab", { "SwitchCase": 1, "VariableDeclarator": 1 }],
+		"quotes": ["error", "double"],
+		"no-tabs": 0,
+		"no-void": 0,
+		"no-console": 0,
+		"no-underscore-dangle": 0,
+		"comma-dangle": 0,
+		"import/no-dynamic-require": 0,
+		"import/extensions": 0,
+		"function-paren-newline": 0,
+		"global-require": 0,
+		"prefer-destructuring": ["error", { "AssignmentExpression": { "array": false, "object": false } }],
+		"max-len": ["error", { "ignoreComments": true, "ignoreStrings": true, "ignoreTemplateLiterals": true } ]
+	},
+	"settings": {
+		"import/core-modules": ["sinon"]
+	}
+}

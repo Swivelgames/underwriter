@@ -1,1 +1,1 @@
-export { default as default } from "./guarantor.js";
+export { default } from "./guarantor.js";
