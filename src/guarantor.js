@@ -22,6 +22,7 @@ export default class Guarantor {
 		initializer,
 		retrieveEarly = false,
 		thenableApi = Promise,
+		publicFulfill = false,
 	}) {
 		// Make sure our retriever is a function
 		if (!retriever || typeof retriever !== "function") {
@@ -71,6 +72,21 @@ export default class Guarantor {
 			promises: new Map()
 		});
 		/* c8 ignore stop */
+
+		if (publicFulfill === true) {
+			Object.defineProperty(this, "fulfill", {
+				configurable: true,
+				writable: false,
+				value: (identifier, guarantee) => (
+					fulfill(
+						this,
+						Private.get(this),
+						identifier,
+						guarantee
+					)
+				)
+			});
+		}
 	}
 
 	/**

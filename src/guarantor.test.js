@@ -103,6 +103,32 @@ describe("underwriter::Guarantor", () => {
 				({ message }) => message === expected
 			);
 		});
+
+		it("should NOT expose a fulfill method if publicFulfill option is false", () => {
+			instance = new Guarantor({
+				retriever: mockRetriever,
+				publicFulfill: false,
+			});
+
+			assert.ok(!("fulfill" in instance));
+
+			assert.ok(
+				typeof instance.fulfill !== "function",
+				"should have method called fulfill"
+			);
+		});
+
+		it("should expose a fulfill methods if publicFulfill option is true", () => {
+			instance = new Guarantor({
+				retriever: mockRetriever,
+				publicFulfill: true
+			});
+
+			assert.ok(
+				typeof instance.fulfill === "function",
+				"should have method called fulfill"
+			);
+		});
 	});
 
 	describe("underwriter:get( identifier )", () => {
@@ -300,6 +326,25 @@ describe("underwriter::Guarantor", () => {
 				mockRetriever.callCount, 0,
 				"should not be called if lazy is true"
 			);
+		});
+	});
+
+	describe("underwriter:fulfill( identifier, guarantee )", () => {
+		it("should fulfill the guarantee matching the identifier", async () => {
+			const mockIdentifier = randomString();
+			const stubGuarantee = randomString();
+
+			mockRetriever = sinon.fake(() => stubGuarantee);
+
+			instance = new Guarantor({
+				retriever: mockRetriever,
+				publicFulfill: true,
+			});
+
+			await instance.fulfill(mockIdentifier, stubGuarantee);
+			const ret = await instance.get(mockIdentifier);
+
+			assert.strictEqual(stubGuarantee, ret);
 		});
 	});
 });
