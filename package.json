@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "underwriter",
-	"version": "0.0.1",
+	"version": "0.0.3",
 	"description": "An automated Promise Registry",
 	"author": "Joseph Dalrymple <swivelgames@gmail.com>",
 	"main": "lib/index.js",
