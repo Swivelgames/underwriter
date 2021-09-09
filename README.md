@@ -12,8 +12,8 @@ A simple, yet powerful, Promise Registry.
         - [Wait to Retrieve](#wait-to-retrieve)
         - [Retrieve Now, But Wait to Initialize](#retrieve-now-but-wait-to-initialize)
     - [Advanced/Experimental](#advancedexperimental)
-        - [_`boolean`_ `options.publicFulfill` _Optional_](#boolean-optionspublicfulfill-optional)
-        - [_`prototype/class`_ `options.thenableApi` _Optional_](#prototypeclass-thenableapi-optional)
+        - [_`prototype/class`_ `options.thenableApi` _Experimental_](#-prototypeclass-optionsthenableapi-experimental)
+        - [_`boolean`_ `options.publicFulfill` _Experimental_](#-boolean-optionspublicfulfill-experimental)
 - [Test Coverage](#test-coverage)
 - [Lifecycle Diagram](#lifecycle-diagram)
 
