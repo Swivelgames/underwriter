@@ -52,11 +52,11 @@ const resource = await guarantor.get(identifier);
 ```javascript
 // /configs/api.json
 {
-	configVersion: "2.3.15",
-	config: {
-		apiEndpoint: "/api/",
-		apiVersion: "v1"
-	}
+        configVersion: "2.3.15",
+        config: {
+                apiEndpoint: "/api/",
+                apiVersion: "v1"
+        }
 }
 ```
 
@@ -65,17 +65,17 @@ const resource = await guarantor.get(identifier);
 import Guarantor from "underwriter";
 
 const retriever = (identifier) => (
-	fetch(`/configs/${identifier}.json`).then(
-		(response) => response.json()
-	)
+        fetch(`/configs/${identifier}.json`).then(
+                (response) => response.json()
+        )
 );
 
 // Optional
 const initializer = (identifier, guarantee) => guarantee.config;
 
 const configGuarantor = new Guarantor({
-	retriever,
-	initializer,
+        retriever,
+        initializer,
 });
 
 const apiConfig = await configGuarantor.get('api');
@@ -134,10 +134,10 @@ This changes the behavior of `option.defer` by allowing the Guarantor to call th
 ```javascript
 const defer = startupProcess(); // Promise
 const guarantor = new Guarantor({
-	retriever,
-	retrieveEarly: true, /* <<< */
-	initializer,
-	defer,
+        retriever,
+        retrieveEarly: true, /* <<< */
+        initializer,
+        defer,
 });
 // Retrieves immediately, but doesn't initialize() or
 // resolve until after startupProcess is resolved
@@ -149,33 +149,34 @@ Setting this to `true` is theoretically faster, because the Guarantor doesn't wa
 
 ## Advanced/Experimental
 
-### _`boolean`_ `options.publicFulfill` _Optional_
+### 🧪 _`prototype/class`_ `options.thenableApi` _Experimental_
+
+The `options.thenableApi` feature allows you to specify a Promise implementation different than the built-in, which should give you flexibility in the types of Promises you're working with. For instance, official support for the novel [`thenable-events`](https://www.npmjs.com/package/thenable-events) Promise implementation is expected in the near future.
+
+
+### 🧪 _`boolean`_ `options.publicFulfill` _Experimental_
 
 By default, a `retriever` will execute when a Guarantee is requested, and the return value of this `retriever` will be used to `initialize` and then `fulfill` the Guarantee. However, if there are times when you would like to `fulfill` a Guarantee outside of the standard lifecycle, you can do so by setting `publicFulfill` to `true`, which will give you a method for fulfilling a Guarantee ad-hoc:
 
-```
+```typescript
 type Guarantor.fulfill = (identifier: string, guarantee: any): Promise<any>;
 ```
 
 Executing this function will pass the `identifier` and `guarantee` to the optional `initializer`, and then fulfill the Guarantee.
 
-**Note:** _Guarantees can only be fulfilled once. Attempting to fulfill a Guarantee outside of the standard lifecycle may cause a rejection if the Guarantee has already been fulfilled._
+> **Note:** _Guarantees can only be fulfilled once. Attempting to fulfill a Guarantee outside of the standard lifecycle may cause a rejection if the Guarantee has already been fulfilled._
 
-**_This may change behavior in an unexpected manner._** Please be aware of the differences in behavior before using this option.
+| :warning: This may change behavior in an unexpected manner. |
+| --- |
 
-**With `options.publicFulfill = true`:**
-- A previously non-existent `Guarantor.fulfill()` method appears.
-- The `retriever` option becomes optional if this option is true.
-- If the `retriever()` returns `undefined` for a particular identifier, the guarantee _will not be fulfilled with a value of `undefined`_, and instead wait for the manual invocation of `Guarantor.fulfill()` to fulfill the promise (see fulfill syntax above).
+Please be aware of the differences in behavior outlined below before using this option.
 
-If `options.publicFulfill = false`, a warning is now outputted informing the developer that **_the guarantee will successfully be fulfilled with a value of `undefined`_**, which may be unintended.
+| `publicFulfill` | Changes |
+| -------------- | :------ |
+| `true`         | <ul><li>A previously non-existent `Guarantor.fulfill()` method appears.</li><li>The `retriever` option becomes optional.</li><li>If the `retriever()` returns `undefined` for a particular identifier, the guarantee _will not be fulfilled with a value of `undefined`_, and instead wait for the manual invocation of `Guarantor.fulfill()` to fulfill the promise (see fulfill syntax above).</li></ul> |
+| `false`        | <ul><li>If `options.publicFulfill = false`, a warning is now outputted informing the developer that **_the guarantee will successfully be fulfilled with a value of `undefined`_**, which may be unintended.</li></ul> |
 
 This behavior is currently being debated. Please refer to the issue ticket, or create one, to discuss.
-
-
-### _`prototype/class`_ `options.thenableApi` _Optional_
-
-The `options.thenableApi` feature allows you to specify a Promise implementation different than the built-in, which should give you flexibility in the types of Promises you're working with. For instance, official support for the novel [`thenable-events`](https://www.npmjs.com/package/thenable-events) Promise implementation is expected in the near future.
 
 
 # Test Coverage
@@ -248,4 +249,3 @@ call  ╔═════════════════════╗     
                            (fulfilled)                                 │
                                 └──────────────────────────────────────┘
 ```
-
