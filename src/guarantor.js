@@ -25,7 +25,7 @@ export default class Guarantor {
 		publicFulfill = false,
 	}) {
 		// Make sure our retriever is a function
-		if (!retriever || typeof retriever !== "function") {
+		if (publicFulfill !== true && (!retriever || typeof retriever !== "function")) {
 			throw new TypeError(
 				ERRORS.Guarantor.constructor.invalidRetriever(
 					retriever
@@ -66,6 +66,7 @@ export default class Guarantor {
 			retriever,
 			retrieveEarly,
 			thenableApi,
+			publicFulfill,
 			...(initializer ? ({ initializer }) : {}),
 			registry: new Set(),
 			resolvers: new Map(),
@@ -109,6 +110,7 @@ export default class Guarantor {
 			promises,
 			retriever,
 			retrieveEarly,
+			publicFulfill,
 			thenableApi: ThenableApi
 		} = Private.get(this);
 
@@ -136,16 +138,24 @@ export default class Guarantor {
 				resolvers.set(fmtdId, { resolve, reject });
 
 				// If we're being lazy, don't call the retriever
-				if (lazy === true) return;
+				if (lazy === true || !retriever) return;
 
 				const principle = retrieveEarly ? Promise.resolve() : defer;
 
 				// Retrieve the subject of the guarantee
 				principle.then(
 					() => retriever(identifier)
-				).then((guarantee) => (
-					fulfill(this, Private.get(this), identifier, guarantee)
-				)).catch(reject);
+				).then((guarantee) => {
+					if (typeof guarantee === "undefined") {
+						if (publicFulfill === true) return;
+						console.warn(
+							ERRORS.Guarantor.get.undefinedGuarantee(
+								identifier, guarantee
+							)
+						);
+					}
+					return fulfill(this, Private.get(this), identifier, guarantee)
+				}).catch(reject);
 			})
 		).catch((error) => {
 			// If there was an error retrieving, display it and then rethrow

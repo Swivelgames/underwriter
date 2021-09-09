@@ -26,6 +26,9 @@ const ERRORS = {
 			retrieverError: (identifier) => (
 				`Guarantor.retriever( identifier: "${identifier}" ): An error occurred when trying to retrieve the referenced identifier. ${ERROR_NOT_MY_FAULT}`
 			),
+			undefinedGuarantee: (identifier) => (
+				`Guarantor.retriver( identifier: "${identifier}" ): The retriever for this guarantee returned "undefined", which will be used to fulfill it. Proceeding anyway. If this was unintended, it may be necessary to throw errors or return a rejected promise for edge cases that may have resulted in an undefined value. ${ERROR_NOT_MY_FAULT}`
+			)
 		},
 	},
 	Fulfill: {

@@ -12,8 +12,10 @@ A simple, yet powerful, Promise Registry.
         - [Wait to Retrieve](#wait-to-retrieve)
         - [Retrieve Now, But Wait to Initialize](#retrieve-now-but-wait-to-initialize)
     - [Advanced/Experimental](#advancedexperimental)
+        - [_`boolean`_ `options.publicFulfill` _Optional_](#boolean-optionspublicfulfill-optional)
         - [_`prototype/class`_ `options.thenableApi` _Optional_](#prototypeclass-thenableapi-optional)
 - [Test Coverage](#test-coverage)
+- [Lifecycle Diagram](#lifecycle-diagram)
 
 
 # How It Works
@@ -29,6 +31,7 @@ Underwriter provides access to Guarantors, which are simple interfaces for retri
 In more ambiguous terms (`:^)`), Underwriter uses `Guarantors` to provide consumers with a method of retrieving named `guarantees` from its registries.
 
 Guarantors are general purpose, and can be used for anything, from asynchronously importing ESM modules using `import()`, one-time retrieval of static resources from an API/CDN/wherever, or anything else you can think of. It can even be used for retrieving interfaces for things already loaded in your environment, like UI Components, Controllers, Models, Stores, Actions, et cetera.
+
 
 # Quick Usage
 
@@ -49,11 +52,11 @@ const resource = await guarantor.get(identifier);
 ```javascript
 // /configs/api.json
 {
-	configVersion: "2.3.15",
-	config: {
-		apiEndpoint: "/api/",
-		apiVersion: "v1"
-	}
+        configVersion: "2.3.15",
+        config: {
+                apiEndpoint: "/api/",
+                apiVersion: "v1"
+        }
 }
 ```
 
@@ -62,17 +65,17 @@ const resource = await guarantor.get(identifier);
 import Guarantor from "underwriter";
 
 const retriever = (identifier) => (
-	fetch(`/configs/${identifier}.json`).then(
-		(response) => response.json()
-	)
+        fetch(`/configs/${identifier}.json`).then(
+                (response) => response.json()
+        )
 );
 
 // Optional
 const initializer = (identifier, guarantee) => guarantee.config;
 
 const configGuarantor = new Guarantor({
-	retriever,
-	initializer,
+        retriever,
+        initializer,
 });
 
 const apiConfig = await configGuarantor.get('api');
@@ -131,10 +134,10 @@ This changes the behavior of `option.defer` by allowing the Guarantor to call th
 ```javascript
 const defer = startupProcess(); // Promise
 const guarantor = new Guarantor({
-	retriever,
-	retrieveEarly: true, /* <<< */
-	initializer,
-	defer,
+        retriever,
+        retrieveEarly: true, /* <<< */
+        initializer,
+        defer,
 });
 // Retrieves immediately, but doesn't initialize() or
 // resolve until after startupProcess is resolved
@@ -146,20 +149,39 @@ Setting this to `true` is theoretically faster, because the Guarantor doesn't wa
 
 ## Advanced/Experimental
 
-### _`prototype/class`_ `options.thenableApi` _Optional_
+### 🧪 _`prototype/class`_ `options.thenableApi` _Experimental_
 
 The `options.thenableApi` feature allows you to specify a Promise implementation different than the built-in, which should give you flexibility in the types of Promises you're working with. For instance, official support for the novel [`thenable-events`](https://www.npmjs.com/package/thenable-events) Promise implementation is expected in the near future.
+
+
+### 🧪 _`boolean`_ `options.publicFulfill` _Experimental_
+
+By default, a `retriever` will execute when a Guarantee is requested, and the return value of this `retriever` will be used to `initialize` and then `fulfill` the Guarantee. However, if there are times when you would like to `fulfill` a Guarantee outside of the standard lifecycle, you can do so by setting `publicFulfill` to `true`, which will give you a method for fulfilling a Guarantee ad-hoc:
+
+```typescript
+type Guarantor.fulfill = (identifier: string, guarantee: any): Promise<any>;
+```
+
+Executing this function will pass the `identifier` and `guarantee` to the optional `initializer`, and then fulfill the Guarantee.
+
+> **Note:** _Guarantees can only be fulfilled once. Attempting to fulfill a Guarantee outside of the standard lifecycle may cause a rejection if the Guarantee has already been fulfilled._
+
+| :warning: This may change behavior in an unexpected manner. |
+| --- |
+
+Please be aware of the differences in behavior outlined below before using this option.
+
+| `publicFulfill` | Changes |
+| -------------- | :------ |
+| `true`         | <ul><li>A previously non-existent `Guarantor.fulfill()` method appears.</li><li>The `retriever` option becomes optional.</li><li>If the `retriever()` returns `undefined` for a particular identifier, the guarantee _will not be fulfilled with a value of `undefined`_, and instead wait for the manual invocation of `Guarantor.fulfill()` to fulfill the promise (see fulfill syntax above).</li></ul> |
+| `false`        | <ul><li>If `options.publicFulfill = false`, a warning is now outputted informing the developer that **_the guarantee will successfully be fulfilled with a value of `undefined`_**, which may be unintended.</li></ul> |
+
+This behavior is currently being debated. Please refer to the issue ticket, or create one, to discuss.
 
 
 # Test Coverage
 
 ```
-  underwriter::fulfill
-    ✔ should reject if the identifier has already been fulfilled
-    ✔ should fulfill the guarantee
-    underwriter::defaultInitializer
-      ✔ should return the guarantee as-is
-
   underwriter::Guarantor
     underwriter::constructor()
       ✔ should throw if no retriever is passed
@@ -168,6 +190,10 @@ The `options.thenableApi` feature allows you to specify a Promise implementation
       ✔ should throw if an invalid defer is passed
       ✔ should throw if an invalid initializer is passed
       ✔ should throw if an invalid Thenable API is passed
+      ✔ should NOT expose a fulfill method if publicFulfill option is omitted
+      ✔ should NOT expose a fulfill method if publicFulfill option is false
+      ✔ should expose a fulfill method if publicFulfill option is true
+      ✔ should NOT throw if publicFulfill is true and no retriever is passed
     underwriter:get( identifier )
       ✔ should reject if no identifier is passed
       ✔ should reject if an invalid identifier is passed
@@ -176,9 +202,23 @@ The `options.thenableApi` feature allows you to specify a Promise implementation
       ✔ should not produce new promises or call the retriever again on subsequent calls
       ✔ should wait to retrieve a guarantee until defer promise resolves if retrieveEarly is false
       ✔ should immediately retrieve a guarantee if retrieveEarly is true
+      ✔ should fulfill even if retriever returns void
+      ✔ should NOT fulfill if retriever returns void, but publicFulfill is true
+      ✔ should not call the retriever if it was omitted and publicFulfill is true
+    underwriter:fulfill( identifier, guarantee )
+      ✔ should fulfill the guarantee matching the identifier
+
+  underwriter::utils
+    formatName()
+      ✔ should return lowercased version of a string
+      ✔ should cast other types to string
+    initializeIfNeeded()
+      ✔ should initialize a missing key
+      ✔ should initialize a missing key with a specific value factory
+      ✔ should preserve the original value if a key already exists
 
 
-  22 passing (69ms)
+  30 passing (98ms)
 
 --------------|---------|----------|---------|---------|-------------------
 File          | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
@@ -189,4 +229,23 @@ All files     |     100 |      100 |     100 |     100 |
  guarantor.js |     100 |      100 |     100 |     100 |
  utils.js     |     100 |      100 |     100 |     100 |
 --------------|---------|----------|---------|---------|-------------------
+```
+
+
+# Lifecycle Diagram
+
+Here's a bonus for you: A horribly crude and probably unhelpful lifecycle diagram that looks like it was put together by a 5 year old :)
+
+```
+call  ╔═════════════════════╗      ┌┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┐
+⇢┈┈⇢┈ ║ Guarantor.get( id ) ║      ┊  (some local or remote resource)  ┊
+      ╚══════════╤══════════╝      └┈┈┈┈┈┈┈┬┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┬┈┈┈┈┈┈┈┘
+                 │                         │                   │
+                 │              ┌──────────↑───────────────────↓───────┐
+                 │          (pending)      ↑                   │       │
+ return    ╔═══════════╗⇢┈┈┈┈⇢┈ │── options.retriever(id)      │       │
+⇠┈┈┈┈┈┈┈┈⇠ ║ *Promise  ║        │                              ↓       │
+           ╚═══════════╝┈⇠┈┈┈┈⇠ │←─ options.intializer(id, resource)   │
+                           (fulfilled)                                 │
+                                └──────────────────────────────────────┘
 ```

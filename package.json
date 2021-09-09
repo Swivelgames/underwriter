@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "underwriter",
-	"version": "0.0.1",
+	"version": "0.0.6",
 	"description": "An automated Promise Registry",
 	"author": "Joseph Dalrymple <swivelgames@gmail.com>",
 	"main": "lib/index.js",
@@ -24,10 +24,10 @@
 		"coverage": "npx c8 --check-coverage npm run test-mocha"
 	},
 	"devDependencies": {
-		"@babel/cli": "^7.14.8",
-		"@babel/core": "^7.15.0",
+		"@babel/cli": "^7.15.4",
+		"@babel/core": "^7.15.5",
 		"@babel/plugin-proposal-class-properties": "^7.14.5",
-		"@babel/preset-env": "^7.15.0",
+		"@babel/preset-env": "^7.15.4",
 		"@babel/register": "^7.14.5",
 		"@rollup/plugin-babel": "^5.3.0",
 		"babel-eslint": "^10.1.0",
