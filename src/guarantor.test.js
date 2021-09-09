@@ -104,6 +104,19 @@ describe("underwriter::Guarantor", () => {
 			);
 		});
 
+		it("should NOT expose a fulfill method if publicFulfill option is omitted", () => {
+			instance = new Guarantor({
+				retriever: mockRetriever,
+			});
+
+			assert.ok(!("fulfill" in instance));
+
+			assert.ok(
+				typeof instance.fulfill !== "function",
+				"should have method called fulfill"
+			);
+		});
+
 		it("should NOT expose a fulfill method if publicFulfill option is false", () => {
 			instance = new Guarantor({
 				retriever: mockRetriever,
@@ -118,7 +131,7 @@ describe("underwriter::Guarantor", () => {
 			);
 		});
 
-		it("should expose a fulfill methods if publicFulfill option is true", () => {
+		it("should expose a fulfill method if publicFulfill option is true", () => {
 			instance = new Guarantor({
 				retriever: mockRetriever,
 				publicFulfill: true
@@ -128,6 +141,10 @@ describe("underwriter::Guarantor", () => {
 				typeof instance.fulfill === "function",
 				"should have method called fulfill"
 			);
+		});
+
+		it("should NOT throw if publicFulfill is true and no retriever is passed", () => {
+			assert.ok(new Guarantor({ publicFulfill: true }));
 		});
 	});
 
@@ -306,6 +323,68 @@ describe("underwriter::Guarantor", () => {
 					resolve();
 				}, 5);
 			});
+		});
+
+		it("should fulfill even if retriever returns void", async () => {
+			const mockIdentifier = randomString();
+			const stubGuarantee = randomString();
+
+			mockRetriever = sinon.fake.returns(
+				Promise.resolve(void 0)
+			);
+
+			instance = new Guarantor({
+				retriever: mockRetriever
+			});
+
+			await instance.get(mockIdentifier);
+		});
+
+		it("should NOT fulfill if retriever returns void, but publicFulfill is true", async () => {
+			const mockIdentifier = randomString();
+			const stubGuarantee = randomString();
+
+			mockRetriever = sinon.fake.returns(
+				Promise.resolve(void 0)
+			);
+
+			instance = new Guarantor({
+				retriever: mockRetriever,
+				publicFulfill: true,
+			});
+
+			let resolve;
+			let reject;
+			const prom = new Promise((res,rej) => {
+				resolve = res;
+				reject = rej;
+			});
+
+			instance.get(mockIdentifier).then(() => {
+				reject("promise should not have been resolved");
+			});
+
+			setTimeout(() => {
+				assert.equal(
+					mockRetriever.callCount, 1,
+					"retriever should be called once"
+				);
+				resolve();
+			}, 10);
+
+			return prom;
+		});
+
+		it("should not call the retriever if it was omitted and publicFulfill is true", async () => {
+			const mockIdentifier = randomString();
+
+			instance = new Guarantor({ publicFulfill: true });
+
+			setTimeout(() => {
+				instance.fulfill(mockIdentifier, true);
+			}, 5);
+
+			await instance.get(mockIdentifier);
 		});
 
 		it("internal: should not call the retriever if lazy is true", () => {
