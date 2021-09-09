@@ -109,6 +109,7 @@ export default class Guarantor {
 			promises,
 			retriever,
 			retrieveEarly,
+			publicFulfill,
 			thenableApi: ThenableApi
 		} = Private.get(this);
 
@@ -143,9 +144,13 @@ export default class Guarantor {
 				// Retrieve the subject of the guarantee
 				principle.then(
 					() => retriever(identifier)
-				).then((guarantee) => (
-					fulfill(this, Private.get(this), identifier, guarantee)
-				)).catch(reject);
+				).then((guarantee) => {
+					if (
+						typeof guarantee === "undefined" &&
+						publicFulfill === true
+					) return;
+					return fulfill(this, Private.get(this), identifier, guarantee)
+				}).catch(reject);
 			})
 		).catch((error) => {
 			// If there was an error retrieving, display it and then rethrow
