@@ -147,14 +147,17 @@ export default class Guarantor {
 					() => retriever(identifier)
 				).then((guarantee) => {
 					if (typeof guarantee === "undefined") {
-						if (publicFulfill === true) return;
+						if (publicFulfill === true) return undefined;
 						console.warn(
 							ERRORS.Guarantor.get.undefinedGuarantee(
 								identifier, guarantee
 							)
 						);
 					}
-					return fulfill(this, Private.get(this), identifier, guarantee)
+
+					return fulfill(
+						this, Private.get(this), identifier, guarantee
+					);
 				}).catch(reject);
 			})
 		).catch((error) => {
