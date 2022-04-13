@@ -242,13 +242,11 @@ describe("underwriter::Guarantor", () => {
 			await expected;
 
 			assert.strictEqual(
-				expected, actual,
-				"should always return the same promise"
+				expected, actual, "should always return the same promise"
 			);
 
 			assert.equal(
-				mockRetriever.callCount, 1,
-				"should only call retriever() once"
+				mockRetriever.callCount, 1, "should only call retriever() once"
 			);
 		});
 
@@ -275,8 +273,7 @@ describe("underwriter::Guarantor", () => {
 
 			setTimeout(() => {
 				assert.equal(
-					mockRetriever.callCount, 0,
-					"shouldn't call retriever yet"
+					mockRetriever.callCount, 0, "shouldn't call retriever yet"
 				);
 			}, 5);
 
@@ -287,8 +284,7 @@ describe("underwriter::Guarantor", () => {
 			await expected;
 
 			assert.equal(
-				mockRetriever.callCount, 1,
-				"should only call retriever() once"
+				mockRetriever.callCount, 1, "should only call retriever() once"
 			);
 		});
 
@@ -314,8 +310,7 @@ describe("underwriter::Guarantor", () => {
 				setTimeout(() => {
 					try {
 						assert.equal(
-							mockRetriever.callCount, 1,
-							"should have already called the retriever"
+							mockRetriever.callCount, 1, "should have already called the retriever"
 						);
 					} catch (e) {
 						reject(e);
@@ -327,7 +322,6 @@ describe("underwriter::Guarantor", () => {
 
 		it("should fulfill even if retriever returns void", async () => {
 			const mockIdentifier = randomString();
-			const stubGuarantee = randomString();
 
 			mockRetriever = sinon.fake.returns(
 				Promise.resolve(void 0)
@@ -342,7 +336,6 @@ describe("underwriter::Guarantor", () => {
 
 		it("should NOT fulfill if retriever returns void, but publicFulfill is true", async () => {
 			const mockIdentifier = randomString();
-			const stubGuarantee = randomString();
 
 			mockRetriever = sinon.fake.returns(
 				Promise.resolve(void 0)
@@ -355,7 +348,7 @@ describe("underwriter::Guarantor", () => {
 
 			let resolve;
 			let reject;
-			const prom = new Promise((res,rej) => {
+			const prom = new Promise((res, rej) => {
 				resolve = res;
 				reject = rej;
 			});
@@ -366,8 +359,7 @@ describe("underwriter::Guarantor", () => {
 
 			setTimeout(() => {
 				assert.equal(
-					mockRetriever.callCount, 1,
-					"retriever should be called once"
+					mockRetriever.callCount, 1, "retriever should be called once"
 				);
 				resolve();
 			}, 10);
@@ -402,8 +394,7 @@ describe("underwriter::Guarantor", () => {
 			instance.get(mockIdentifier, true);
 
 			assert.equal(
-				mockRetriever.callCount, 0,
-				"should not be called if lazy is true"
+				mockRetriever.callCount, 0, "should not be called if lazy is true"
 			);
 		});
 	});

@@ -7,7 +7,7 @@
 		"mocha": true
 	},
 	"extends": "airbnb",
-	"parser": "babel-eslint",
+	"parser": "@babel/eslint-parser",
 	"rules": {
 		"indent": [2, "tab", { "SwitchCase": 1, "VariableDeclarator": 1 }],
 		"quotes": ["error", "double"],
