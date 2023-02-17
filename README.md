@@ -4,36 +4,43 @@ A simple, yet powerful, Promise Registry.
 
 - [How It Works](#how-it-works)
 - [Quick Usage](#quick-usage)
-    - [Example](#example)
+  - [Example](#example)
 - [Options](#options)
-    - [_`function`_ `options.retriever` _Required_](#function-optionsretriever-required)
-    - [_`function`_ `options.initializer` _Optional_](#function-optionsinitializer-optional)
-    - [_`Promise`_ `option.defer` _Optional_](#promise-optiondefer-optional)
-        - [Wait to Retrieve](#wait-to-retrieve)
-        - [Retrieve Now, But Wait to Initialize](#retrieve-now-but-wait-to-initialize)
-    - [Advanced/Experimental](#advancedexperimental)
-        - [_`prototype/class`_ `options.thenableApi` _Experimental_](#-prototypeclass-optionsthenableapi-experimental)
-        - [_`boolean`_ `options.publicFulfill` _Experimental_](#-boolean-optionspublicfulfill-experimental)
+  - [_`function`_ `options.retriever` _Required_](#function-optionsretriever-required)
+  - [_`function`_ `options.initializer` _Optional_](#function-optionsinitializer-optional)
+  - [_`Promise`_ `option.defer` _Optional_](#promise-optiondefer-optional)
+    - [Wait to Retrieve](#wait-to-retrieve)
+    - [Retrieve Now, But Wait to Initialize](#retrieve-now-but-wait-to-initialize)
+  - [Advanced/Experimental](#advancedexperimental)
+    - [_`prototype/class`_ `options.thenableApi` _Experimental_](#-prototypeclass-optionsthenableapi-experimental)
+    - [_`boolean`_ `options.publicFulfill` _Experimental_](#-boolean-optionspublicfulfill-experimental)
 - [Test Coverage](#test-coverage)
 - [Lifecycle Diagram](#lifecycle-diagram)
 
+## How It Works
 
-# How It Works
-
-Underwriter provides access to Guarantors, which are simple interfaces for retrieving Promises by name. These promises can either be Resolved with a `guarantee` or Rejected with an error.
+Underwriter provides access to Guarantors, which are simple interfaces for
+retrieving Promises by name. These promises can either be Resolved with a
+`guarantee` or Rejected with an error.
 
 1. A Guarantor is basically an object that holds Promises
 2. Each Promise (guarantee) has a name (identifier)
-3. When you call `.get(identifier)`, you get a Promise back, and the `retriever()` is called
-4. Once `retriever()` fetches the value, an optional `initializer()` can be used to parse/initialize the value
+3. When you call `.get(identifier)`, you get a Promise back, and the
+`retriever()` is called
+4. Once `retriever()` fetches the value, an optional `initializer()` can be used
+to parse/initialize the value
 5. Once that is complete, the value is given to anyone who calls `.get(identifier)`
 
-In more ambiguous terms (`:^)`), Underwriter uses `Guarantors` to provide consumers with a method of retrieving named `guarantees` from its registries.
+In more ambiguous terms (`:^)`), Underwriter uses `Guarantors` to provide
+consumers with a method of retrieving named `guarantees` from its registries.
 
-Guarantors are general purpose, and can be used for anything, from asynchronously importing ESM modules using `import()`, one-time retrieval of static resources from an API/CDN/wherever, or anything else you can think of. It can even be used for retrieving interfaces for things already loaded in your environment, like UI Components, Controllers, Models, Stores, Actions, et cetera.
+Guarantors are general purpose, and can be used for anything, from
+asynchronously importing ESM modules using `import()`, one-time retrieval of
+static resources from an API/CDN/wherever, or anything else you can think of. It
+can even be used for retrieving interfaces for things already loaded in your
+environment, like UI Components, Controllers, Models, Stores, Actions, et cetera.
 
-
-# Quick Usage
+## Quick Usage
 
 ```javascript
 import Guarantor from "underwriter";
@@ -46,9 +53,10 @@ const resource = await guarantor.get(identifier);
 2. Supply a `retriever(identifier: string): Promise<guarantee>`
 3. Request a `guarantee` with `Guarantor.get(identifier)`
 
-## Example
+### Example
 
-**Remote Resource**
+#### Remote Resource
+
 ```javascript
 // /configs/api.json
 {
@@ -60,7 +68,8 @@ const resource = await guarantor.get(identifier);
 }
 ```
 
-**Guarantor**
+#### Guarantor
+
 ```javascript
 import Guarantor from "underwriter";
 
@@ -81,40 +90,55 @@ const configGuarantor = new Guarantor({
 const apiConfig = await configGuarantor.get('api');
 ```
 
+## Options
 
-# Options
-
-
-## _`function`_ `options.retriever` _Required_
+### _`function`_ `options.retriever` _Required_
 
 TypeScript notation:
+
 ```typescript
 type retriever = (identifier: string): Promise<any>;
 ```
 
-The `retriever()` can be any function that accepts an `identifier` and resolves with a promise once the `guarantee` has been retrieved.
-The `retriever` option is a function that is called whenever `.get(identifier)` is called. It is given an `identifier` and expected to retrieve the resource and return it in the form of a promise. This may take the form of a Fetch/XHR/AJAX request, an `import()`, or as simply mapping the `identifier` to the `key` of an object.
+The `retriever()` can be any function that accepts an `identifier` and resolves
+with a promise once the `guarantee` has been retrieved.
+The `retriever` option is a function that is called whenever `.get(identifier)`
+is called. It is given an `identifier` and expected to retrieve the resource and
+return it in the form of a promise. This may take the form of a Fetch/XHR/AJAX
+request, an `import()`, or as simply mapping the `identifier` to the `key` of
+an object.
 
-For those that prefer TypeScript-like notation, the `retriever()` should follow something like:
+For those that prefer TypeScript-like notation, the `retriever()` should follow
+something like:
 
-
-## _`function`_ `options.initializer` _Optional_
+### _`function`_ `options.initializer` _Optional_
 
 TypeScript notation:
+
 ```typescript
 type initializer = (identifier: string, guarantee: any): any;
 ```
 
-The `initializer` is given the `identifier` and `guarantee` value after the resource is retrieved. It's role is to prepare the value for usage. Whatever it returns will be the value that is given to anyone who has requested this guarantee with `.get(identifier)`. This could conceivably be a santization function, a function that calls `JSON.parse()` on the input, or constructs a new class based on the data (e.g., `(id, guarantee) => new Foobar(guarantee)`).
+The `initializer` is given the `identifier` and `guarantee` value after the
+resource is retrieved. It's role is to prepare the value for usage. Whatever
+it returns will be the value that is given to anyone who has requested this
+guarantee with `.get(identifier)`. This could conceivably be a santization
+function, a function that calls `JSON.parse()` on the input, or constructs a
+new class based on the data (e.g., `(id, guarantee) => new Foobar(guarantee)`).
 
+### _`Promise`_ `option.defer` _Optional_
 
-## _`Promise`_ `option.defer` _Optional_
+If you need a Guarantor to wait before it `retrieves` or `initializes` your
+guarantees, you can use the `defer` option, which takes a Promise (or any
+Thenable), and waits for it to resolve before continuing. This can be useful
+if you need to setup your application or retrieve things before you want the
+Guarantor to start retrieving or initializing values.
 
-If you need a Guarantor to wait before it `retrieves` or `initializes` your guarantees, you can use the `defer` option, which takes a Promise (or any Thenable), and waits for it to resolve before continuing. This can be useful if you need to setup your application or retrieve things before you want the Guarantor to start retrieving or initializing values.
+#### Wait to Retrieve
 
-### Wait to Retrieve
-
-This is the default functionality. By passing `option.defer` as a Promise, the Guarantor will not call the `retriever()` until the `option.defer` promise has resolved.
+This is the default functionality. By passing `option.defer` as a Promise, the
+Guarantor will not call the `retriever()` until the `option.defer` promise has
+resolved.
 
 ```javascript
 const defer = startupProcess(); // Promise
@@ -123,13 +147,18 @@ const guarantor = new Guarantor({ retriever, defer });
 const foobar = await guarantor.get('foobar');
 ```
 
-A hypothetical sitation might be when you require authentication (like a `JWT`) before your Guarantor will be able to retrieve anything. In this scenario, you would resolve your `option.defer` promise once you have retrieved your hypothetical `JWT`.
+A hypothetical sitation might be when you require authentication (like a `JWT`)
+before your Guarantor will be able to retrieve anything. In this scenario, you
+would resolve your `option.defer` promise once you have retrieved your
+hypothetical `JWT`.
 
-### Retrieve Now, But Wait to Initialize
+#### Retrieve Now, But Wait to Initialize
 
 **_`boolean`_ `option.retrieveEarly` _Optional_**
 
-This changes the behavior of `option.defer` by allowing the Guarantor to call the `retriever()` immediately, but defers the call to the `initializer()` until the `option.defer` promise has resolved.
+This changes the behavior of `option.defer` by allowing the Guarantor to call
+the `retriever()` immediately, but defers the call to the `initializer()`
+until the `option.defer` promise has resolved.
 
 ```javascript
 const defer = startupProcess(); // Promise
@@ -144,44 +173,58 @@ const guarantor = new Guarantor({
 const foobar = await guarantor.get('foobar');
 ```
 
-Setting this to `true` is theoretically faster, because the Guarantor doesn't wait on anything to retrieve the resources and can do so asynchronously while the application sets itself up. But it will only initialize those values once the `parent` promise resolves.
+Setting this to `true` is theoretically faster, because the Guarantor doesn't
+wait on anything to retrieve the resources and can do so asynchronously while
+the application sets itself up. But it will only initialize those values once
+the `parent` promise resolves.
 
+### Advanced/Experimental
 
-## Advanced/Experimental
+#### 🧪 _`prototype/class`_ `options.thenableApi` _Experimental_
 
-### 🧪 _`prototype/class`_ `options.thenableApi` _Experimental_
+The `options.thenableApi` feature allows you to specify a Promise
+implementation different than the built-in, which should give you flexibility
+in the types of Promises you're working with. For instance, official support
+for the novel [`thenable-events`](https://www.npmjs.com/package/thenable-events)
+Promise implementation is expected in the near future.
 
-The `options.thenableApi` feature allows you to specify a Promise implementation different than the built-in, which should give you flexibility in the types of Promises you're working with. For instance, official support for the novel [`thenable-events`](https://www.npmjs.com/package/thenable-events) Promise implementation is expected in the near future.
+#### 🧪 _`boolean`_ `options.publicFulfill` _Experimental_
 
-
-### 🧪 _`boolean`_ `options.publicFulfill` _Experimental_
-
-By default, a `retriever` will execute when a Guarantee is requested, and the return value of this `retriever` will be used to `initialize` and then `fulfill` the Guarantee. However, if there are times when you would like to `fulfill` a Guarantee outside of the standard lifecycle, you can do so by setting `publicFulfill` to `true`, which will give you a method for fulfilling a Guarantee ad-hoc:
+By default, a `retriever` will execute when a Guarantee is requested, and the
+return value of this `retriever` will be used to `initialize` and then `fulfill`
+the Guarantee. However, if there are times when you would like to `fulfill` a
+Guarantee outside of the standard lifecycle, you can do so by setting
+`publicFulfill` to `true`, which will give you a method for fulfilling a
+Guarantee ad-hoc:
 
 ```typescript
 type Guarantor.fulfill = (identifier: string, guarantee: any): Promise<any>;
 ```
 
-Executing this function will pass the `identifier` and `guarantee` to the optional `initializer`, and then fulfill the Guarantee.
+Executing this function will pass the `identifier` and `guarantee` to the
+optional `initializer`, and then fulfill the Guarantee.
 
-> **Note:** _Guarantees can only be fulfilled once. Attempting to fulfill a Guarantee outside of the standard lifecycle may cause a rejection if the Guarantee has already been fulfilled._
+> **Note:** _Guarantees can only be fulfilled once. Attempting to fulfill a
+> Guarantee outside of the standard lifecycle may cause a rejection if the
+> Guarantee has already been fulfilled._
 
 | :warning: This may change behavior in an unexpected manner. |
 | --- |
 
-Please be aware of the differences in behavior outlined below before using this option.
+Please be aware of the differences in behavior outlined below before using this
+option.
 
 | `publicFulfill` | Changes |
 | -------------- | :------ |
 | `true`         | <ul><li>A previously non-existent `Guarantor.fulfill()` method appears.</li><li>The `retriever` option becomes optional.</li><li>If the `retriever()` returns `undefined` for a particular identifier, the guarantee _will not be fulfilled with a value of `undefined`_, and instead wait for the manual invocation of `Guarantor.fulfill()` to fulfill the promise (see fulfill syntax above).</li></ul> |
 | `false`        | <ul><li>If `options.publicFulfill = false`, a warning is now outputted informing the developer that **_the guarantee will successfully be fulfilled with a value of `undefined`_**, which may be unintended.</li></ul> |
 
-This behavior is currently being debated. Please refer to the issue ticket, or create one, to discuss.
+This behavior is currently being debated. Please refer to the issue ticket, or
+create one, to discuss.
 
+## Test Coverage
 
-# Test Coverage
-
-```
+```mocha
   underwriter::Guarantor
     underwriter::constructor()
       ✔ should throw if no retriever is passed
@@ -231,12 +274,12 @@ All files     |     100 |      100 |     100 |     100 |
 --------------|---------|----------|---------|---------|-------------------
 ```
 
+## Lifecycle Diagram
 
-# Lifecycle Diagram
+Here's a bonus for you: A horribly crude and probably unhelpful lifecycle
+diagram that looks like it was put together by a 5 year old :)
 
-Here's a bonus for you: A horribly crude and probably unhelpful lifecycle diagram that looks like it was put together by a 5 year old :)
-
-```
+```diagram
 call  ╔═════════════════════╗      ┌┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┐
 ⇢┈┈⇢┈ ║ Guarantor.get( id ) ║      ┊  (some local or remote resource)  ┊
       ╚══════════╤══════════╝      └┈┈┈┈┈┈┈┬┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┬┈┈┈┈┈┈┈┘
