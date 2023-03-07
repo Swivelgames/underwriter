@@ -1,0 +1,21 @@
+{
+	"compilerOptions": {
+		"target": "es2016",
+
+		"module": "nodenext",
+		"paths": {
+			"underwriter": ["./index.js"]
+		},
+		"typeRoots": ["./types", "./node_modules/@types"],
+
+		"allowJs": true,
+
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+
+		"strict": true,
+
+		"skipDefaultLibCheck": false,
+		"skipLibCheck": false
+	}
+}

@@ -32,7 +32,9 @@ describe("underwriter::Guarantor", () => {
 			);
 		});
 
-		it("should NOT throw if optional properties are omitted from options", () => new Guarantor({ retriever: mockRetriever }));
+		it("should NOT throw if optional properties are omitted from options", () => {
+			return new Guarantor({ retriever: mockRetriever });
+		});
 
 		it("should throw if an invalid retriever is passed", () => {
 			const invalidRetriever = [];
