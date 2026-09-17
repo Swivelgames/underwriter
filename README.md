@@ -216,8 +216,8 @@ option.
 
 | `publicFulfill` | Changes |
 | -------------- | :------ |
-| `true`         | <ul><li>A previously non-existent `Guarantor.fulfill()` method appears.</li><li>The `retriever` option becomes optional.</li><li>If the `retriever()` returns `undefined` for a particular identifier, the guarantee _will not be fulfilled with a value of `undefined`_, and instead wait for the manual invocation of `Guarantor.fulfill()` to fulfill the promise (see fulfill syntax above).</li></ul> |
-| `false`        | <ul><li>If `options.publicFulfill = false`, a warning is now outputted informing the developer that **_the guarantee will successfully be fulfilled with a value of `undefined`_**, which may be unintended.</li></ul> |
+| `true` | <ul><li>A previously non-existent `Guarantor.fulfill()` method appears.</li><li>The `retriever` option becomes optional.</li><li>If the `retriever()` returns `undefined` for a particular identifier, the guarantee _will not be fulfilled with a value of `undefined`_, and instead wait for the manual invocation of `Guarantor.fulfill()` to fulfill the promise (see fulfill syntax above).</li></ul> |
+| `false` | <ul><li>If `options.publicFulfill = false`, a warning is now outputted informing the developer that **_the guarantee will successfully be fulfilled with a value of `undefined`_**, which may be unintended.</li></ul> |
 
 This behavior is currently being debated. Please refer to the issue ticket, or
 create one, to discuss.

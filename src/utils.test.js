@@ -1,6 +1,4 @@
-/* eslint-disable no-unused-vars */
 import assert from "assert";
-/* eslint-enable no-unused-vars */
 
 import {
 	formatName,

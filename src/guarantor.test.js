@@ -1,4 +1,4 @@
-/* eslint-disable import/first, no-unused-vars */
+/* eslint-disable no-unused-vars */
 import assert from "assert";
 import sinon from "sinon";
 import crypto from "crypto";
