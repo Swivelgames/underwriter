@@ -71,5 +71,5 @@
 		"url": "https://github.com/Swivelgames/underwriter/issues"
 	},
 	"homepage": "https://github.com/Swivelgames/underwriter#readme",
-	"license": "GNUv3"
+	"license": "MIT OR GPL-3.0-only"
 }

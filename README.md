@@ -292,3 +292,14 @@ call  ╔═════════════════════╗     
                            (fulfilled)                                 │
                                 └──────────────────────────────────────┘
 ```
+
+## License
+
+Underwriter is dual-licensed under the **MIT License** and the **GNU General Public License (GPL) v3**.
+
+You may use this software under either license, at your option:
+
+- **MIT License** — Use for proprietary or commercial projects without copyleft obligations
+- **GPL v3** — Use if you want to ensure all modifications remain open-source
+
+See [`LICENSE.md`](LICENSE.md) for more information.
