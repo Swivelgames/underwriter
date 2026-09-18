@@ -2,40 +2,90 @@
 
 **Effective Date:** September 18, 2026
 
-Underwriter has been publicly available since its first release, `v0.0.1`,
-published September 4, 2021. Prior to `v1.0.2` (see `LICENSE.md`), every
-released version of this project was distributed solely under the GNU
-General Public License v3.0 (GPLv3).
+## 1. Background
 
-Joseph Dalrymple is, and has been since the project's inception, the sole
-author and sole copyright holder of Underwriter. As of the effective date
-above, Joseph Dalrymple hereby extends the option to license **every
-version of Underwriter ever made publicly available** — including but not
-limited to every version from `0.0.1` through `1.0.1-2`, and any earlier
-pre-release version that may have circulated prior to the first public
-`npm` publication — under the **MIT License**, in addition to the terms
-under which each version was originally released.
+Underwriter (the "**Software**") was first published to the npm registry
+as `v0.0.1` on September 4, 2021. Every version of the Software released
+prior to `v1.0.2` was distributed solely under the terms of the GNU
+General Public License v3.0 ("**GPLv3**"). Beginning with `v1.0.2`, the
+Software has been dual-licensed under GPLv3 and the MIT License, as
+described in `LICENSE.md`.
 
-As a result, effective immediately, anyone using any past version of
-Underwriter may choose to exercise their rights under **either**:
+Joseph Dalrymple is, and has been at all times since the Software's
+creation, its sole author. Joseph Dalrymple represents that he is the
+sole owner of all copyright in the Software for every Covered Version
+listed in Section 2, and that no other individual or entity holds any
+copyright interest in them.
 
-- the GNU General Public License v3.0 (`LICENSE-GPL`), the license under
-	which that version was originally distributed, or
-- the MIT License (`LICENSE-MIT`),
+## 2. Covered Versions
 
-at their own option, for that version.
+This Notice applies to the following versions of the Software (the
+"**Covered Versions**"), each of which was released under GPLv3 only:
 
-This notice only **adds** a more permissive licensing option to past
-versions. It does not revoke, narrow, or otherwise alter any rights
-already granted under the GPLv3 for those versions, and it does not change
-the licensing of `v1.0.2` and later, which are dual-licensed under MIT and
-GPLv3 as described in `LICENSE.md`.
+`0.0.1`, `0.0.2`, `0.0.3`, `0.0.4`, `0.0.5`, `0.0.6`, `0.0.7`, `0.0.8`,
+`0.0.9`, `0.0.10`, `1.0.0`, `1.0.1-0`, `1.0.1-1`, `1.0.1-2`
 
-— Joseph Dalrymple
+and any source code of the Software authored solely by Joseph Dalrymple
+that predates, and was not otherwise publicly released prior to, `v0.0.1`.
+
+`v1.0.2` and all subsequent versions are unaffected by this Notice; they
+are, and remain, dual-licensed under GPLv3 and the MIT License as
+described in `LICENSE.md`.
+
+## 3. Grant of License
+
+Effective as of the date above, and retroactive to each Covered Version's
+original date of publication, Joseph Dalrymple hereby grants, to any
+person obtaining a copy of a Covered Version, a perpetual, irrevocable,
+worldwide, non-exclusive, royalty-free license to use, copy, modify,
+merge, publish, distribute, sublicense, and/or sell copies of that
+Covered Version, and to permit persons to whom it is furnished to do so,
+under the terms of the MIT License reproduced in `LICENSE-MIT`, at that
+person's option.
+
+This grant is made **in addition to, and not in replacement of**, the
+rights already held by any person under the GPLv3 terms originally
+accompanying each Covered Version. No rights previously granted under
+GPLv3 are revoked, narrowed, or otherwise diminished by this Notice.
+
+## 4. Irrevocability
+
+The license granted in Section 3 is irrevocable. Once granted with
+respect to a given copy of a Covered Version, it may not be rescinded,
+terminated, or narrowed by Joseph Dalrymple or by any successor in
+interest to the copyright in the Software.
+
+## 5. Scope and Limitations
+
+This grant extends only to source code of the Covered Versions authored
+by, and as originally published to the npm registry by, Joseph Dalrymple.
+It does not extend to, and no representation or warranty is made
+regarding the licensing of, any fork, modification, or derivative work of
+a Covered Version that was independently created or distributed by a
+third party.
+
+## 6. No Warranty
+
+The Software is licensed, and this grant is made, on an "AS IS" basis,
+without warranty of any kind, to the fullest extent permitted by the
+disclaimer of warranty set out in the MIT License text in `LICENSE-MIT`,
+which is incorporated into this grant by reference.
+
+## 7. Severability
+
+If any provision of this Notice is held to be unenforceable or invalid,
+that provision shall be limited or eliminated to the minimum extent
+necessary so that this Notice otherwise remains in full force and effect
+and enforceable.
 
 ---
 
-This notice is a public statement by the copyright holder, made in that
-capacity, and is not a substitute for independent legal advice. Anyone who
-needs legal certainty about their specific use of this software should
+Joseph Dalrymple
+Sole author and copyright holder, Underwriter
+
+---
+
+This Notice is a public statement made by the copyright holder in that
+capacity and is not a substitute for independent legal advice. Anyone who
+requires legal certainty about their specific use of the Software should
 consult their own counsel.
