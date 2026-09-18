@@ -15,3 +15,10 @@ You may use this software under either of these licenses, at your option:
 Both license texts are included in this repository. For more information, visit:
 - [MIT License](https://opensource.org/licenses/MIT)
 - [GNU General Public License v3](https://www.gnu.org/licenses/gpl-3.0.html)
+
+## Prior Versions
+
+This dual license applies to `v1.0.2` and later. Versions prior to
+`v1.0.2` were originally released under GPLv3 only, but the copyright
+holder has since extended the MIT option to those versions retroactively.
+See [`NOTICE.md`](NOTICE.md) for the full retroactive licensing statement.

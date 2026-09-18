@@ -303,3 +303,7 @@ You may use this software under either license, at your option:
 - **GPL v3** — Use if you want to ensure all modifications remain open-source
 
 See [`LICENSE.md`](LICENSE.md) for more information.
+
+This dual license has also been extended retroactively to every version of
+Underwriter published prior to `v1.0.2`, which were originally GPLv3-only.
+See [`NOTICE.md`](NOTICE.md) for details.

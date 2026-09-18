@@ -14,7 +14,10 @@
 		"lib/",
 		"index.d.ts",
 		"README.md",
-		"LICENSE.md"
+		"LICENSE.md",
+		"LICENSE-MIT",
+		"LICENSE-GPL",
+		"NOTICE.md"
 	],
 	"scripts": {
 		"build": "pnpm run clean && pnpm run build:rollup",
