@@ -280,15 +280,15 @@ Here's a bonus for you: A horribly crude and probably unhelpful lifecycle
 diagram that looks like it was put together by a 5 year old :)
 
 ```diagram
-call  ╔═════════════════════╗      ┌┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┐
-⇢┈┈⇢┈ ║ Guarantor.get( id ) ║      ┊  (some local or remote resource)  ┊
-      ╚══════════╤══════════╝      └┈┈┈┈┈┈┈┬┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┬┈┈┈┈┈┈┈┘
+call  ┌─────────────────────┐      ┌┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┐
+→┈┈→┈ │ Guarantor.get( id ) │      ┊  (some local or remote resource)  ┊
+      └──────────┬──────────┘      └┈┈┈┈┈┈┈┬┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┬┈┈┈┈┈┈┈┘
                  │                         │                   │
                  │              ┌──────────↑───────────────────↓───────┐
                  │          (pending)      ↑                   │       │
- return    ╔═══════════╗⇢┈┈┈┈⇢┈ │── options.retriever(id)      │       │
-⇠┈┈┈┈┈┈┈┈⇠ ║ *Promise  ║        │                              ↓       │
-           ╚═══════════╝┈⇠┈┈┈┈⇠ │←─ options.intializer(id, resource)   │
+ return    ┌───────────┐→┈┈┈┈→┈ │── options.retriever(id)      │       │
+←┈┈┈┈┈┈┈┈← │ *Promise  │        │                              ↓       │
+           └───────────┘┈←┈┈┈┈← │←─ options.intializer(id, resource)   │
                            (fulfilled)                                 │
                                 └──────────────────────────────────────┘
 ```
